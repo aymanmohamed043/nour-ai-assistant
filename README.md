@@ -153,8 +153,8 @@ The full reasoning and numbers are in [`docs/decisions.md`](docs/decisions.md).
 | Policy answers — 30 questions (gemini-3.5-flash-lite) | ✅ 28 correct, 2 partial, **0 wrong facts** |
 | Re-test of the hard cases after the prompt fixes (boundaries, English, follow-ups, third person) | ✅ 9/9 correct |
 | Policy answer model — 8 hard questions (gemini-3.1-flash-lite, final main model) | ✅ 8/8 correct |
-| End-to-end demo test (policy, follow-up, balance, leave request + confirm, FAQ, advice, new visitor) | ✅ all routes correct, all features working |
-| Response time (Telegram message → reply) | ✅ 0.4 s fixed replies · 1–5 s typical · ~11 s worst case when a fallback model answers |
+| [End-to-end demo test](docs/evaluation.md#6-end-to-end-demo-test-nexora-demo-bot-2026-10-30) (policy, follow-up, balance, leave request + confirm, FAQ, advice, new visitor) | ✅ all routes correct, all features working |
+| [Response time](docs/evaluation.md#7-response-time-live-bot-2026-10-28) (Telegram message → reply) | ✅ 0.4 s fixed replies · 1–5 s typical (measured) · ≈11 s worst case when a fallback answers (calculated) |
 
 ### Model selection (same chunks, same prompt, free tier, Oct 2026)
 

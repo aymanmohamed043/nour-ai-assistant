@@ -11,6 +11,8 @@ the result, and the decision it led to. Answers were graded against the policy t
 | 3 | [Policy answers: a local 35B model](#3-policy-answers-a-local-35b-model-30-questions) | 3 wrong, 4× slower | Not used for policy answers |
 | 4 | [8 free models, 8 hard questions](#4-free-gemini--gemma-models-8-hard-questions) | gemini-3.1-flash-lite 8/8 | Chosen as the main policy answer model |
 | 5 | [Prompt fixes re-test](#5-re-test-after-the-prompt-fixes) | 9/9 correct | Prompt v2.1 went live |
+| 6 | [End-to-end demo test](#6-end-to-end-demo-test-nexora-demo-bot-2026-10-30) | 8/8 messages correct, routing 7/7 | 4 problems found and fixed before release |
+| 7 | [Response time](#7-response-time-live-bot-2026-10-28) | 0.4–4.4 s measured; one 28.5 s case | Main policy timeout lowered from 20 s to 7 s |
 
 ---
 
@@ -129,3 +131,45 @@ and the reply language is set by code. The questions that had failed were run ag
 | "Can I take a salary advance?" | English + English sources line | ✅ correct |
 
 **Decision.** Prompt v2.1 went live.
+
+---
+
+## 6. End-to-end demo test (Nexora demo bot, 2026-10-30)
+
+Real Telegram messages through the full demo bot (main → router → branch → reply).
+
+| # | Message | Route | Result |
+|---|---|---|---|
+| 1 | «إجازة الجواز كام يوم؟» | policy | ✅ 5 working days after 6 months of service (clause 2-4-5) |
+| 2 | «طب ولو لسه مكملتش 6 شهور؟» (follow-up) | policy | ✅ understood it refers to marriage leave: not eligible yet |
+| 3 | «رصيد إجازاتي كام؟» | hr_data | ✅ 21 annual + 7 casual, nothing pending (clauses 2-4-2, 2-4-3) |
+| 4 | «نسيت الباسورد بتاع السيستم أعمل إيه؟» | faq | ✅ contact IT, explained the steps |
+| 5 | «زميلي بيقاطعني في الاجتماعات أعمل إيه؟» | work_advice | ✅ practical advice in Egyptian Arabic |
+| 6 | «عايز أقدم إجازة سنوية يوم الأحد الجاي» | hr_data | ✅ prepared the request and asked for confirmation |
+| 7 | «أيوه أكد» | hr_data | ✅ request #7 submitted, pending the direct manager |
+| 8 | New visitor (chat not linked) — «رصيد إجازاتي كام؟» | hr_data | ✅ own demo employee created automatically, 21 + 7 |
+
+Routing: 7/7 correct on the first run.
+Problems found and fixed in this test: demo balances were 0 (data), work advice was too formal (new prompt),
+«يا فندم» in an HR answer (removed in code for all routes), new visitors were refused (database permission).
+
+---
+
+## 7. Response time (live bot, 2026-10-28)
+
+Measured from the n8n execution of each real Telegram message (6 messages, end-to-end test):
+
+| Message | Route | Time |
+|---|---|---|
+| «شكراً» | fixed reply (code) | 0.4 s |
+| «asdfgh» | unclear | 0.9 s |
+| «زميل بيقاطعني» | general | 2.3 s |
+| «How many annual leave days do I get?» | policy | 3.2 s |
+| «قولي اي الخصومات دي» (follow-up) | policy | 4.4 s |
+| «اي نظام ومواعيد الشغل في الشركه» | policy (fallback model answered) | 28.5 s → fixed |
+
+The 28.5 s case: the main policy model did not answer and the bot waited for its full 20 s timeout before the fallback answered.
+Fix: timeout lowered to 12 s, then to 7 s (the main model's slowest normal answer in tests was 8.5 s; its median 4.4 s).
+Router alone: ~1.7 s (measured on a later message).
+
+Worst case after the fix is **calculated, not measured**: ~3 s search + 7 s main-model timeout + ~1.5 s fallback answer ≈ 11 s.
