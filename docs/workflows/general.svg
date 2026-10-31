@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="695" height="287" viewBox="0 0 695 287" font-family="Inter, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+<title>General — n8n workflow</title>
+<defs>
+  <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#d9dee5"/></pattern>
+  <marker id="arrow" viewBox="0 0 10 10" refX="4" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8b95a5"/></marker>
+  <marker id="arrowErr" viewBox="0 0 10 10" refX="4" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e11d48"/></marker>
+  <style>
+    .edge{fill:none;stroke:#8b95a5;stroke-width:1.6}
+    .edge.err{stroke:#e11d48;stroke-dasharray:5 4}
+    .edge.ai{stroke:#a3abb8;stroke-dasharray:4 4}
+    .node{fill:#fff;stroke:var(--c);stroke-width:2;filter:drop-shadow(0 1px 2px rgba(15,23,42,.12))}
+    .glyph{font-size:15px;font-weight:700;text-anchor:middle}
+    .name{font-size:12px;fill:#1f2937;text-anchor:middle}
+    .name.in{text-anchor:start;font-weight:600}
+    .pill{fill:#eef1f5;stroke:#cdd3dc}
+    .pill.err{fill:#fff1f3;stroke:#fda4af}
+    .pilltxt{font-size:10px;fill:#475569;text-anchor:middle}
+    .pilltxt.err{fill:#be123c}
+    .diamond{fill:#fff;stroke:#8b95a5;stroke-width:1.4}
+    .ailbl{font-size:10px;fill:#64748b;text-anchor:middle}
+    .legend{font-size:11px;fill:#475569}
+  </style>
+</defs>
+<rect width="695" height="287" rx="14" fill="#f7f8fa"/>
+<rect width="695" height="287" rx="14" fill="url(#dots)"/>
+<rect x="0.5" y="0.5" width="694" height="286" rx="14" fill="none" stroke="#e2e6ec"/>
+<text x="40" y="44" font-size="20" font-weight="700" fill="#111827">General</text>
+<text x="40" y="66" font-size="12" fill="#6b7280">Nour · n8n workflow · 4 nodes · 3 connections</text>
+<g transform="translate(72.24000000000007,150)">
+<path d="M32,0 C84,0 84,0 130,0" class="edge" marker-end="url(#arrow)"/>
+<path d="M200,0 C255.1,0 255.1,0 304.2,0" class="edge" marker-end="url(#arrow)"/>
+<path d="M374.2,0 C434.52,0 434.52,0 488.8399999999999,0" class="edge" marker-end="url(#arrow)"/>
+<g><path d="M22,-32 h10 v64 h-10 H0 a32,32 0 0 1 0,-64 z" class="node" style="--c:#ea580c"/><text x="0" y="5" class="glyph" fill="#ea580c">IN</text><text x="0" y="50" class="name">Input</text></g>
+<g><rect x="136" y="-32" width="64" height="64" rx="10" class="node" style="--c:#d97706"/><text x="168" y="5" class="glyph" fill="#d97706">{ }</text><text x="168" y="50" class="name">General Request</text></g>
+<g><rect x="310.2" y="-32" width="64" height="64" rx="10" class="node" style="--c:#7c3aed"/><text x="342.2" y="5" class="glyph" fill="#7c3aed">API</text><text x="342.2" y="50" class="name">Answer with Gemini</text></g>
+<g><rect x="494.8399999999999" y="-32" width="64" height="64" rx="10" class="node" style="--c:#d97706"/><text x="526.8399999999999" y="5" class="glyph" fill="#d97706">{ }</text><text x="526.8399999999999" y="50" class="name">Return (General)</text></g>
+
+</g>
+<rect x="40" y="253" width="12" height="12" rx="3" fill="#ea580c"/><text x="58" y="263" class="legend">Trigger</text><rect x="118.66" y="253" width="12" height="12" rx="3" fill="#d97706"/><text x="136.66" y="263" class="legend">Code</text><rect x="178.18" y="253" width="12" height="12" rx="3" fill="#7c3aed"/><text x="196.18" y="263" class="legend">HTTP (Gemini API)</text>
+</svg>

@@ -1,0 +1,180 @@
+{
+  "name": "Onboarding",
+  "description": "Nour bot part ②b: unlinked chat asks for the employee code and links it. In: Build Prompt data. Out: contract.",
+  "active": true,
+  "createdAt": "2026-10-25T09:13:04.104Z",
+  "updatedAt": "2026-10-26T20:19:49.415Z",
+  "isArchived": false,
+  "versionCounter": 2,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "name": "Input",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "name": "Onboarding Step",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        250,
+        280
+      ],
+      "parameters": {
+        "jsCode": "// ② First-time / unlinked Telegram account: ask for the employee code (no LLM).\n// Decision 2026-10-20: link by employee code only (no birth date) for now.\nconst b = $('Input').first().json;\nconst toLatin = (s) => String(s || '')\n  .replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))\n  .replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));\nconst cm = toLatin(b.user_text).match(/NXR\\s*-?\\s*(\\d{3,5})/i);\nconst code = cm ? `NXR-${cm[1].padStart(4, '0')}` : null;\nif (code) return [{ json: { action: 'link', code, chat_id: b.chat_id } }];\nreturn [{ json: { action: 'ask', route: 'onboarding',\n  output: 'أهلاً بحضرتك 👋 أنا نور، مساعد موظفين Nexora Digital Solutions.\\nقبل ما أساعد حضرتك ابعتلي كود الموظف بتاعك، مثلاً: NXR-1001\\nلو مش عارف الكود، تلاقيه في سيستم الـ HR أو اسأل الموارد البشرية.',\n  tool_calls: [{ tool: 'onboarding', input: { has_code: false }, output: null }] } }];\n"
+      }
+    },
+    {
+      "name": "Try Link?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        458,
+        280
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "trylink",
+              "leftValue": "={{ $json.action }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "link"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      }
+    },
+    {
+      "name": "Link Account",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        650,
+        200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [ $json.chat_id, $json.code ] }}"
+        },
+        "query": "SELECT hr.link_telegram_by_code($1::bigint, $2::text) AS result;"
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "name": "Link Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        858,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Turns hr.link_telegram_by_code's result into a reply. No LLM.\nconst r = $json.result || {};\nconst first = String(r.name || '').split(' ')[0];\nconst left = Number.isFinite(r.attempts_left) ? ` (فاضل ${r.attempts_left} محاولات)` : '';\nconst MAP = {\n  linked: `تمام يا ${first}، اتربط حساب حضرتك ✅\\nدلوقتي تقدر تسألني عن اللائحة، أو رصيد أجازاتك وطلباتك وحضورك، أو تقدملي طلب أجازة أو إذن أو مأمورية أو خطاب. حضرتك محتاج إيه؟`,\n  already_linked: 'حساب حضرتك مربوط بالفعل ✅ اتفضل اسألني.',\n  invalid: `كود الموظف ده مش موجود عندنا 🙏 راجعه وابعته تاني${left}.`,\n  too_many_attempts: 'محاولات كتير غلط 🙏 جرب تاني بعد ساعة أو تواصل مع الموارد البشرية.',\n  linked_elsewhere: 'كود الموظف ده مربوط بحساب تليجرام تاني 🙏 لو ده حسابك الجديد تواصل مع الموارد البشرية عشان يفكوا الربط القديم.',\n};\nreturn [{ json: {\n  output: MAP[r.result] ?? 'معلش، حصلت مشكلة في التحقق 🙏 جرب تاني بعد شوية.',\n  route: 'onboarding',\n  tool_calls: [{ tool: 'link_telegram', input: { code: $('Onboarding Step').first().json.code }, output: { result: r.result ?? 'error' } }],\n} }];\n"
+      }
+    },
+    {
+      "name": "Return (Onboarding)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        280
+      ],
+      "parameters": {
+        "jsCode": "// Onboarding result → CONTRACT (what the main workflow's Prepare Reply expects).\nconst b = $('Input').first().json;\nreturn [{ json: { update_id: b.update_id, chat_id: b.chat_id, route: 'onboarding',\n  output: String($json.output ?? '').trim(), tool_calls: Array.isArray($json.tool_calls) ? $json.tool_calls : [],\n  router: { decided_by: 'onboarding', pass: null, model: null, error: null }, faq: null } }];\n"
+      }
+    }
+  ],
+  "connections": {
+    "Input": {
+      "main": [
+        [
+          {
+            "node": "Onboarding Step",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Onboarding Step": {
+      "main": [
+        [
+          {
+            "node": "Try Link?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Try Link?": {
+      "main": [
+        [
+          {
+            "node": "Link Account",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return (Onboarding)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Link Account": {
+      "main": [
+        [
+          {
+            "node": "Link Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Link Reply": {
+      "main": [
+        [
+          {
+            "node": "Return (Onboarding)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  }
+}

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1631" height="341" viewBox="0 0 1631 341" font-family="Inter, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+<title>Router — n8n workflow</title>
+<defs>
+  <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#d9dee5"/></pattern>
+  <marker id="arrow" viewBox="0 0 10 10" refX="4" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8b95a5"/></marker>
+  <marker id="arrowErr" viewBox="0 0 10 10" refX="4" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e11d48"/></marker>
+  <style>
+    .edge{fill:none;stroke:#8b95a5;stroke-width:1.6}
+    .edge.err{stroke:#e11d48;stroke-dasharray:5 4}
+    .edge.ai{stroke:#a3abb8;stroke-dasharray:4 4}
+    .node{fill:#fff;stroke:var(--c);stroke-width:2;filter:drop-shadow(0 1px 2px rgba(15,23,42,.12))}
+    .glyph{font-size:15px;font-weight:700;text-anchor:middle}
+    .name{font-size:12px;fill:#1f2937;text-anchor:middle}
+    .name.in{text-anchor:start;font-weight:600}
+    .pill{fill:#eef1f5;stroke:#cdd3dc}
+    .pill.err{fill:#fff1f3;stroke:#fda4af}
+    .pilltxt{font-size:10px;fill:#475569;text-anchor:middle}
+    .pilltxt.err{fill:#be123c}
+    .diamond{fill:#fff;stroke:#8b95a5;stroke-width:1.4}
+    .ailbl{font-size:10px;fill:#64748b;text-anchor:middle}
+    .legend{font-size:11px;fill:#475569}
+  </style>
+</defs>
+<rect width="1631" height="341" rx="14" fill="#f7f8fa"/>
+<rect width="1631" height="341" rx="14" fill="url(#dots)"/>
+<rect x="0.5" y="0.5" width="1630" height="340" rx="14" fill="none" stroke="#e2e6ec"/>
+<text x="40" y="44" font-size="20" font-weight="700" fill="#111827">Router</text>
+<text x="40" y="66" font-size="12" fill="#6b7280">Nour · n8n workflow · 9 nodes · 12 connections</text>
+<g transform="translate(72.30000000000007,167.33333333333334)">
+<path d="M32,0 C84,0 84,0 130,0" class="edge" marker-end="url(#arrow)"/>
+<path d="M200,0 C252,0 252,0 298,0" class="edge" marker-end="url(#arrow)"/>
+<path d="M565,-3.552713678800501e-15 C631.5,-3.552713678800501e-15 631.5,10.666666666666663 692,10.666666666666663" class="edge" marker-end="url(#arrow)"/>
+<path d="M565,21.33333333333333 C631.5,21.33333333333333 631.5,10.666666666666663 692,10.666666666666663" class="edge err" marker-end="url(#arrowErr)"/>
+<path d="M762,10.666666666666664 C820.5799999999999,10.666666666666664 820.5799999999999,10.666666666666664 873.16,10.666666666666664" class="edge" marker-end="url(#arrow)"/>
+<path d="M1140.1599999999999,10.66666666666666 C1206.6599999999999,10.66666666666666 1206.6599999999999,21.33333333333333 1267.1599999999999,21.33333333333333" class="edge" marker-end="url(#arrow)"/>
+<path d="M1140.1599999999999,31.999999999999993 C1206.6599999999999,31.999999999999993 1206.6599999999999,21.33333333333333 1267.1599999999999,21.33333333333333" class="edge err" marker-end="url(#arrowErr)"/>
+<path d="M1337.1599999999999,21.33333333333333 C1389.1599999999999,21.33333333333333 1389.1599999999999,3.5555555555555522 1435.1599999999999,3.5555555555555522" class="edge" marker-end="url(#arrow)"/>
+<path d="M368,-10.666666666666668 C422.5,-10.666666666666668 422.5,-43.333333333333336 477,-43.333333333333336 L1361.1599999999999,-43.333333333333336 C1401.1599999999999,-43.333333333333336 1401.1599999999999,3.5555555555555522 1435.1599999999999,3.5555555555555522" class="edge" marker-end="url(#arrow)"/>
+<path d="M368,10.666666666666664 C434.5,10.666666666666664 434.5,10.666666666666664 495,10.666666666666664" class="edge" marker-end="url(#arrow)"/>
+<path d="M943.16,-3.552713678800501e-15 C997.6599999999999,-3.552713678800501e-15 997.6599999999999,-32.66666666666667 1052.1599999999999,-32.66666666666667 L1361.1599999999999,-32.66666666666667 C1401.1599999999999,-32.66666666666667 1401.1599999999999,3.5555555555555522 1435.1599999999999,3.5555555555555522" class="edge" marker-end="url(#arrow)"/>
+<path d="M943.16,21.33333333333333 C1009.6599999999999,21.33333333333333 1009.6599999999999,21.33333333333333 1070.1599999999999,21.33333333333333" class="edge" marker-end="url(#arrow)"/>
+<g><path d="M22,-32 h10 v64 h-10 H0 a32,32 0 0 1 0,-64 z" class="node" style="--c:#ea580c"/><text x="0" y="5" class="glyph" fill="#ea580c">IN</text><text x="0" y="50" class="name">Input</text></g>
+<g><rect x="136" y="-32" width="64" height="64" rx="10" class="node" style="--c:#d97706"/><text x="168" y="5" class="glyph" fill="#d97706">{ }</text><text x="168" y="50" class="name">Build Router</text><text x="168" y="65" class="name">Request</text></g>
+<g><rect x="304" y="-32" width="64" height="64" rx="10" class="node" style="--c:#16a34a"/><text x="336" y="5" class="glyph" fill="#16a34a">IF</text><text x="336" y="50" class="name">Fixed Reply?</text></g>
+<g><rect x="501" y="-21.333333333333336" width="64" height="64" rx="10" class="node" style="--c:#7c3aed"/><text x="533" y="15.666666666666664" class="glyph" fill="#7c3aed">API</text><text x="533" y="60.666666666666664" class="name">Route with Gemini</text></g>
+<g><rect x="698" y="-21.333333333333336" width="64" height="64" rx="10" class="node" style="--c:#d97706"/><text x="730" y="15.666666666666663" class="glyph" fill="#d97706">{ }</text><text x="730" y="60.666666666666664" class="name">Read Gemini Route</text></g>
+<g><rect x="879.16" y="-21.333333333333336" width="64" height="64" rx="10" class="node" style="--c:#16a34a"/><text x="911.16" y="15.666666666666664" class="glyph" fill="#16a34a">IF</text><text x="911.16" y="60.666666666666664" class="name">Gemini OK?</text></g>
+<g><rect x="1076.1599999999999" y="-10.666666666666671" width="64" height="64" rx="10" class="node" style="--c:#7c3aed"/><text x="1108.1599999999999" y="26.33333333333333" class="glyph" fill="#7c3aed">API</text><text x="1108.1599999999999" y="71.33333333333333" class="name">Route with Gemini</text><text x="1108.1599999999999" y="86.33333333333333" class="name">3.1 (fallback)</text></g>
+<g><rect x="1273.1599999999999" y="-10.666666666666671" width="64" height="64" rx="10" class="node" style="--c:#d97706"/><text x="1305.1599999999999" y="26.33333333333333" class="glyph" fill="#d97706">{ }</text><text x="1305.1599999999999" y="71.33333333333333" class="name">Read Fallback</text><text x="1305.1599999999999" y="86.33333333333333" class="name">Route</text></g>
+<g><rect x="1441.1599999999999" y="-28.444444444444446" width="64" height="64" rx="10" class="node" style="--c:#d97706"/><text x="1473.1599999999999" y="8.555555555555552" class="glyph" fill="#d97706">{ }</text><text x="1473.1599999999999" y="53.55555555555555" class="name">Route Decided</text></g>
+<g data-k="Route with Gemini#1"><rect x="571" y="13.333333333333329" width="39" height="16" rx="8" class="pill err"/><text x="590.5" y="24.83333333333333" class="pilltxt err">error</text></g>
+<g data-k="Route with Gemini 3.1 (fallback)#1"><rect x="1146.1599999999999" y="23.999999999999993" width="39" height="16" rx="8" class="pill err"/><text x="1165.6599999999999" y="35.49999999999999" class="pilltxt err">error</text></g>
+<g data-k="Fixed Reply?#0"><rect x="374" y="-18.666666666666668" width="33.2" height="16" rx="8" class="pill"/><text x="390.6" y="-7.166666666666668" class="pilltxt">true</text></g>
+<g data-k="Fixed Reply?#1"><rect x="374" y="2.6666666666666643" width="39" height="16" rx="8" class="pill"/><text x="393.5" y="14.166666666666664" class="pilltxt">false</text></g>
+<g data-k="Gemini OK?#0"><rect x="949.16" y="-8.000000000000004" width="33.2" height="16" rx="8" class="pill"/><text x="965.76" y="3.4999999999999964" class="pilltxt">true</text></g>
+<g data-k="Gemini OK?#1"><rect x="949.16" y="13.333333333333329" width="39" height="16" rx="8" class="pill"/><text x="968.66" y="24.83333333333333" class="pilltxt">false</text></g>
+</g>
+<rect x="40" y="307" width="12" height="12" rx="3" fill="#ea580c"/><text x="58" y="317" class="legend">Trigger</text><rect x="118.66" y="307" width="12" height="12" rx="3" fill="#d97706"/><text x="136.66" y="317" class="legend">Code</text><rect x="178.18" y="307" width="12" height="12" rx="3" fill="#16a34a"/><text x="196.18" y="317" class="legend">If / Switch</text><rect x="282.36" y="307" width="12" height="12" rx="3" fill="#7c3aed"/><text x="300.36" y="317" class="legend">HTTP (Gemini API)</text>
+</svg>

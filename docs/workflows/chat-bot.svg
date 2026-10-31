@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3368" height="1045" viewBox="0 0 3368 1045" font-family="Inter, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+<title>Chat Bot (main) — n8n workflow</title>
+<defs>
+  <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#d9dee5"/></pattern>
+  <marker id="arrow" viewBox="0 0 10 10" refX="4" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8b95a5"/></marker>
+  <marker id="arrowErr" viewBox="0 0 10 10" refX="4" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e11d48"/></marker>
+  <style>
+    .edge{fill:none;stroke:#8b95a5;stroke-width:1.6}
+    .edge.err{stroke:#e11d48;stroke-dasharray:5 4}
+    .edge.ai{stroke:#a3abb8;stroke-dasharray:4 4}
+    .node{fill:#fff;stroke:var(--c);stroke-width:2;filter:drop-shadow(0 1px 2px rgba(15,23,42,.12))}
+    .glyph{font-size:15px;font-weight:700;text-anchor:middle}
+    .name{font-size:12px;fill:#1f2937;text-anchor:middle}
+    .name.in{text-anchor:start;font-weight:600}
+    .pill{fill:#eef1f5;stroke:#cdd3dc}
+    .pill.err{fill:#fff1f3;stroke:#fda4af}
+    .pilltxt{font-size:10px;fill:#475569;text-anchor:middle}
+    .pilltxt.err{fill:#be123c}
+    .diamond{fill:#fff;stroke:#8b95a5;stroke-width:1.4}
+    .ailbl{font-size:10px;fill:#64748b;text-anchor:middle}
+    .legend{font-size:11px;fill:#475569}
+  </style>
+</defs>
+<rect width="3368" height="1045" rx="14" fill="#f7f8fa"/>
+<rect width="3368" height="1045" rx="14" fill="url(#dots)"/>
+<rect x="0.5" y="0.5" width="3367" height="1044" rx="14" fill="none" stroke="#e2e6ec"/>
+<text x="40" y="44" font-size="20" font-weight="700" fill="#111827">Chat Bot (main)</text>
+<text x="40" y="66" font-size="12" fill="#6b7280">Nour · n8n workflow · 28 nodes · 41 connections</text>
+<g transform="translate(95.88000000000004,687.4166666666666)">
+<path d="M32,0 C88.84,0 88.84,0 139.68,0" class="edge" marker-end="url(#arrow)"/>
+<path d="M390.84000000000003,-24 C492.14000000000004,-24 492.14000000000004,-170.25 587.44,-170.25" class="edge" marker-end="url(#arrow)"/>
+<path d="M390.84000000000003,0 C492.14000000000004,0 492.14000000000004,-45.25 587.44,-45.25" class="edge" marker-end="url(#arrow)"/>
+<path d="M390.84000000000003,24 C492.14000000000004,24 492.14000000000004,79.75 587.44,79.75" class="edge" marker-end="url(#arrow)"/>
+<path d="M390.84000000000003,48 C492.14000000000004,48 492.14000000000004,79.75 587.44,79.75" class="edge" marker-end="url(#arrow)"/>
+<path d="M390.84000000000003,72 C492.14000000000004,72 492.14000000000004,219.75 587.44,219.75" class="edge" marker-end="url(#arrow)"/>
+<path d="M209.68,0 C268.26,0 268.26,0 320.84000000000003,0" class="edge" marker-end="url(#arrow)"/>
+<path d="M657.44,-55.91666666666667 C716.02,-55.91666666666667 716.02,-55.91666666666667 768.6,-55.91666666666667" class="edge" marker-end="url(#arrow)"/>
+<path d="M838.6,-66.58333333333334 C905.1,-66.58333333333334 905.1,-118.41666666666667 965.6,-118.41666666666667" class="edge" marker-end="url(#arrow)"/>
+<path d="M838.6,-45.25000000000001 C905.1,-45.25000000000001 905.1,6.583333333333329 965.6,6.583333333333329" class="edge" marker-end="url(#arrow)"/>
+<path d="M1035.6,-129.08333333333334 C1092.44,-129.08333333333334 1092.44,-129.08333333333334 1143.28,-129.08333333333334" class="edge" marker-end="url(#arrow)"/>
+<path d="M2722.4,-229.7023809523809 C2774.4,-229.7023809523809 2774.4,-229.7023809523809 2820.4,-229.7023809523809" class="edge" marker-end="url(#arrow)"/>
+<path d="M2890.4,-240.36904761904756 C2942.4,-240.36904761904756 2942.4,-240.36904761904756 2988.4,-240.36904761904756" class="edge" marker-end="url(#arrow)"/>
+<path d="M2357.4,-48.0833333333333 C2411.9,-48.0833333333333 2411.9,-179.86904761904762 2466.4,-179.86904761904762 L2578.4,-179.86904761904762 C2618.4,-179.86904761904762 2618.4,-219.03571428571425 2652.4,-219.03571428571425" class="edge" marker-end="url(#arrow)"/>
+<path d="M2357.4,76.9166666666667 C2411.9,76.9166666666667 2411.9,-179.86904761904762 2466.4,-179.86904761904762 L2578.4,-179.86904761904762 C2618.4,-179.86904761904762 2618.4,-219.03571428571425 2652.4,-219.03571428571425" class="edge" marker-end="url(#arrow)"/>
+<path d="M1213.28,-139.75 C1265.28,-139.75 1265.28,-139.75 1311.28,-139.75" class="edge" marker-end="url(#arrow)"/>
+<path d="M3058.4,-251.03571428571425 C3111.76,-251.03571428571425 3111.76,-251.03571428571425 3159.12,-251.03571428571425" class="edge" marker-end="url(#arrow)"/>
+<path d="M2554.4,-250.8690476190476 C2606.4,-250.8690476190476 2606.4,-219.03571428571425 2652.4,-219.03571428571425" class="edge" marker-end="url(#arrow)"/>
+<path d="M2114,-284.91666666666663 C2203.7,-284.91666666666663 2203.7,-537.4166666666666 2287.4,-537.4166666666666" class="edge" marker-end="url(#arrow)"/>
+<path d="M2114,-260.91666666666663 C2203.7,-260.91666666666663 2203.7,-412.41666666666663 2287.4,-412.41666666666663" class="edge" marker-end="url(#arrow)"/>
+<path d="M2114,-236.91666666666663 C2203.7,-236.91666666666663 2203.7,-287.41666666666663 2287.4,-287.41666666666663" class="edge" marker-end="url(#arrow)"/>
+<path d="M2114,-212.91666666666663 C2203.7,-212.91666666666663 2203.7,-162.41666666666663 2287.4,-162.41666666666663" class="edge" marker-end="url(#arrow)"/>
+<path d="M2114,-188.91666666666663 C2203.7,-188.91666666666663 2203.7,-37.41666666666663 2287.4,-37.41666666666663" class="edge" marker-end="url(#arrow)"/>
+<path d="M2114,-164.91666666666663 C2203.7,-164.91666666666663 2203.7,87.58333333333337 2287.4,87.58333333333337" class="edge" marker-end="url(#arrow)"/>
+<path d="M2114,-140.91666666666663 C2191.7,-140.91666666666663 2191.7,-91.41666666666663 2269.4,-91.41666666666663 L2381.4,-91.41666666666663 C2435.9,-91.41666666666663 2435.9,-250.86904761904762 2484.4,-250.86904761904762" class="edge" marker-end="url(#arrow)"/>
+<path d="M1917,-212.91666666666666 C1983.5,-212.91666666666666 1983.5,-212.91666666666666 2044,-212.91666666666666" class="edge" marker-end="url(#arrow)"/>
+<path d="M1917,-191.58333333333334 C1971.5,-191.58333333333334 1971.5,-341.41666666666663 2026,-341.41666666666663 L2381.4,-341.41666666666663 C2435.9,-341.41666666666663 2435.9,-250.86904761904762 2484.4,-250.86904761904762" class="edge err" marker-end="url(#arrowErr)"/>
+<path d="M1917,-87.91666666666667 C1971.5,-87.91666666666667 1971.5,-77.91666666666666 2026,-77.91666666666666 L2578.4,-77.91666666666666 C2618.4,-77.91666666666666 2618.4,-219.03571428571425 2652.4,-219.03571428571425" class="edge" marker-end="url(#arrow)"/>
+<path d="M1917,-66.58333333333334 C1971.5,-66.58333333333334 1971.5,-341.41666666666663 2026,-341.41666666666663 L2381.4,-341.41666666666663 C2435.9,-341.41666666666663 2435.9,-250.86904761904762 2484.4,-250.86904761904762" class="edge err" marker-end="url(#arrowErr)"/>
+<path d="M2357.4,-548.0833333333333 C2411.9,-548.0833333333333 2411.9,-304.8690476190476 2466.4,-304.8690476190476 L2578.4,-304.8690476190476 C2618.4,-304.8690476190476 2618.4,-219.03571428571425 2652.4,-219.03571428571425" class="edge" marker-end="url(#arrow)"/>
+<path d="M2357.4,-526.75 C2423.9,-526.75 2423.9,-250.86904761904762 2484.4,-250.86904761904762" class="edge err" marker-end="url(#arrowErr)"/>
+<path d="M2357.4,-423.0833333333333 C2411.9,-423.0833333333333 2411.9,-304.8690476190476 2466.4,-304.8690476190476 L2578.4,-304.8690476190476 C2618.4,-304.8690476190476 2618.4,-219.03571428571425 2652.4,-219.03571428571425" class="edge" marker-end="url(#arrow)"/>
+<path d="M2357.4,-401.74999999999994 C2423.9,-401.74999999999994 2423.9,-250.86904761904762 2484.4,-250.86904761904762" class="edge err" marker-end="url(#arrowErr)"/>
+<path d="M2357.4,-298.0833333333333 C2411.9,-298.0833333333333 2411.9,-304.8690476190476 2466.4,-304.8690476190476 L2578.4,-304.8690476190476 C2618.4,-304.8690476190476 2618.4,-219.03571428571425 2652.4,-219.03571428571425" class="edge" marker-end="url(#arrow)"/>
+<path d="M2357.4,-276.74999999999994 C2423.9,-276.74999999999994 2423.9,-250.86904761904762 2484.4,-250.86904761904762" class="edge err" marker-end="url(#arrowErr)"/>
+<path d="M2357.4,-173.0833333333333 C2411.9,-173.0833333333333 2411.9,-179.86904761904762 2466.4,-179.86904761904762 L2578.4,-179.86904761904762 C2618.4,-179.86904761904762 2618.4,-219.03571428571425 2652.4,-219.03571428571425" class="edge" marker-end="url(#arrow)"/>
+<path d="M2357.4,-151.74999999999997 C2423.9,-151.74999999999997 2423.9,-250.86904761904762 2484.4,-250.86904761904762" class="edge err" marker-end="url(#arrowErr)"/>
+<path d="M1381.28,-139.75 C1433.28,-139.75 1433.28,-139.75 1479.28,-139.75" class="edge" marker-end="url(#arrow)"/>
+<path d="M1549.28,-139.75 C1602.6399999999999,-139.75 1602.6399999999999,-139.75 1650,-139.75" class="edge" marker-end="url(#arrow)"/>
+<path d="M1720,-150.41666666666666 C1786.5,-150.41666666666666 1786.5,-202.25 1847,-202.25" class="edge" marker-end="url(#arrow)"/>
+<path d="M1720,-129.08333333333334 C1786.5,-129.08333333333334 1786.5,-77.25 1847,-77.25" class="edge" marker-end="url(#arrow)"/>
+<g><path d="M22,-32 h10 v64 h-10 H0 a32,32 0 0 1 0,-64 z" class="node" style="--c:#ea580c"/><text x="0" y="5" class="glyph" fill="#ea580c">TG</text><text x="0" y="50" class="name">Telegram Trigger</text></g>
+<g><rect x="145.68" y="-32" width="64" height="64" rx="10" class="node" style="--c:#d97706"/><text x="177.68" y="5" class="glyph" fill="#d97706">{ }</text><text x="177.68" y="50" class="name">Normalize Message</text></g>
+<g><rect x="326.84000000000003" y="-96" width="64" height="192" rx="10" class="node" style="--c:#16a34a"/><text x="358.84000000000003" y="5" class="glyph" fill="#16a34a">SW</text><text x="358.84000000000003" y="114" class="name">Route by Input</text><text x="358.84000000000003" y="129" class="name">Category</text></g>
+<g><rect x="593.44" y="-202.25" width="64" height="64" rx="10" class="node" style="--c:#229ed9"/><text x="625.44" y="-165.25" class="glyph" fill="#229ed9">TG</text><text x="625.44" y="-120.25" class="name">Reply Welcome</text></g>
+<g><rect x="593.44" y="47.75" width="64" height="64" rx="10" class="node" style="--c:#229ed9"/><text x="625.44" y="84.75" class="glyph" fill="#229ed9">TG</text><text x="625.44" y="129.75" class="name">Reply Unsupported</text><text x="625.44" y="144.75" class="name">Input</text></g>
+<g><rect x="593.44" y="187.75" width="64" height="64" rx="10" class="node" style="--c:#229ed9"/><text x="625.44" y="224.75" class="glyph" fill="#229ed9">TG</text><text x="625.44" y="269.75" class="name">Reply Empty Input</text></g>
+<g><rect x="593.44" y="-77.25" width="64" height="64" rx="10" class="node" style="--c:#336791"/><text x="625.44" y="-40.25" class="glyph" fill="#336791">SQL</text><text x="625.44" y="4.75" class="name">Persist Message</text></g>
+<g><rect x="774.6" y="-87.91666666666667" width="64" height="64" rx="10" class="node" style="--c:#16a34a"/><text x="806.6" y="-50.91666666666667" class="glyph" fill="#16a34a">IF</text><text x="806.6" y="-5.916666666666671" class="name">Is New Message?</text></g>
+<g><rect x="971.6" y="-25.41666666666667" width="64" height="64" rx="10" class="node" style="--c:#94a3b8"/><text x="1003.6" y="11.583333333333329" class="glyph" fill="#94a3b8">—</text><text x="1003.6" y="56.58333333333333" class="name">Duplicate → Stop</text></g>
+<g><rect x="971.6" y="-150.41666666666669" width="64" height="64" rx="10" class="node" style="--c:#336791"/><text x="1003.6" y="-113.41666666666667" class="glyph" fill="#336791">SQL</text><text x="1003.6" y="-68.41666666666667" class="name">Get Context</text></g>
+<g><rect x="1149.28" y="-161.08333333333334" width="64" height="64" rx="10" class="node" style="--c:#d97706"/><text x="1181.28" y="-124.08333333333334" class="glyph" fill="#d97706">{ }</text><text x="1181.28" y="-79.08333333333334" class="name">Build Prompt</text></g>
+<g><rect x="2658.4" y="-251.03571428571425" width="64" height="64" rx="10" class="node" style="--c:#d97706"/><text x="2690.4" y="-214.03571428571425" class="glyph" fill="#d97706">{ }</text><text x="2690.4" y="-169.03571428571425" class="name">Prepare Reply</text></g>
+<g><rect x="2826.4" y="-261.7023809523809" width="64" height="64" rx="10" class="node" style="--c:#229ed9"/><text x="2858.4" y="-224.7023809523809" class="glyph" fill="#229ed9">TG</text><text x="2858.4" y="-179.7023809523809" class="name">Send Reply</text></g>
+<g><rect x="2994.4" y="-272.3690476190476" width="64" height="64" rx="10" class="node" style="--c:#336791"/><text x="3026.4" y="-235.36904761904756" class="glyph" fill="#336791">SQL</text><text x="3026.4" y="-190.36904761904756" class="name">Mark Processed</text></g>
+<g><rect x="2293.4" y="-69.41666666666663" width="64" height="64" rx="10" class="node" style="--c:#d97706"/><text x="2325.4" y="-32.41666666666663" class="glyph" fill="#d97706">{ }</text><text x="2325.4" y="12.583333333333371" class="name">General Reply</text></g>
+<g><rect x="2293.4" y="55.58333333333337" width="64" height="64" rx="10" class="node" style="--c:#d97706"/><text x="2325.4" y="92.58333333333337" class="glyph" fill="#d97706">{ }</text><text x="2325.4" y="137.58333333333337" class="name">Unclear Reply</text></g>
+<g><rect x="2050" y="-308.91666666666663" width="64" height="192" rx="10" class="node" style="--c:#16a34a"/><text x="2082" y="-207.91666666666666" class="glyph" fill="#16a34a">SW</text><text x="2082" y="-98.91666666666666" class="name">Route Switch</text></g>
+<g><rect x="2490.4" y="-282.8690476190476" width="64" height="64" rx="10" class="node" style="--c:#d97706"/><text x="2522.4" y="-245.86904761904762" class="glyph" fill="#d97706">{ }</text><text x="2522.4" y="-200.86904761904762" class="name">Error Reply</text></g>
+<g><rect x="1317.28" y="-171.75" width="64" height="64" rx="10" class="node" style="--c:#336791"/><text x="1349.28" y="-134.75" class="glyph" fill="#336791">SQL</text><text x="1349.28" y="-89.75" class="name">Check Link</text></g>
+<g><rect x="1656" y="-171.75" width="64" height="64" rx="10" class="node" style="--c:#16a34a"/><text x="1688" y="-134.75" class="glyph" fill="#16a34a">IF</text><text x="1688" y="-89.75" class="name">Linked?</text></g>
+<g><rect x="1485.28" y="-171.75" width="64" height="64" rx="10" class="node" style="--c:#d97706"/><text x="1517.28" y="-134.75" class="glyph" fill="#d97706">{ }</text><text x="1517.28" y="-89.75" class="name">Restore Prompt</text></g>
+<g><rect x="3165.12" y="-283.0357142857142" width="64" height="64" rx="10" class="node" style="--c:#336791"/><text x="3197.12" y="-246.03571428571425" class="glyph" fill="#336791">SQL</text><text x="3197.12" y="-201.03571428571425" class="name">Log Router</text><text x="3197.12" y="-186.03571428571425" class="name">Decision</text></g>
+<g><rect x="1853" y="-234.25" width="64" height="64" rx="10" class="node" style="--c:#475569"/><text x="1885" y="-197.25" class="glyph" fill="#475569">SUB</text><text x="1885" y="-152.25" class="name">Call Router</text></g>
+<g><rect x="1853" y="-109.25" width="64" height="64" rx="10" class="node" style="--c:#475569"/><text x="1885" y="-72.25" class="glyph" fill="#475569">SUB</text><text x="1885" y="-27.25" class="name">Call Onboarding</text></g>
+<g><rect x="2293.4" y="-569.4166666666666" width="64" height="64" rx="10" class="node" style="--c:#475569"/><text x="2325.4" y="-532.4166666666666" class="glyph" fill="#475569">SUB</text><text x="2325.4" y="-487.41666666666663" class="name">Call Policy RAG</text></g>
+<g><rect x="2293.4" y="-444.41666666666663" width="64" height="64" rx="10" class="node" style="--c:#475569"/><text x="2325.4" y="-407.41666666666663" class="glyph" fill="#475569">SUB</text><text x="2325.4" y="-362.41666666666663" class="name">Call HR Data Agent</text></g>
+<g><rect x="2293.4" y="-319.41666666666663" width="64" height="64" rx="10" class="node" style="--c:#475569"/><text x="2325.4" y="-282.41666666666663" class="glyph" fill="#475569">SUB</text><text x="2325.4" y="-237.41666666666663" class="name">Call FAQ</text></g>
+<g><rect x="2293.4" y="-194.41666666666663" width="64" height="64" rx="10" class="node" style="--c:#475569"/><text x="2325.4" y="-157.41666666666663" class="glyph" fill="#475569">SUB</text><text x="2325.4" y="-112.41666666666663" class="name">Call Work Advice</text></g>
+<g data-k="Route by Input Category#2"><rect x="396.84000000000003" y="-32" width="85.39999999999999" height="16" rx="8" class="pill"/><text x="439.54" y="-20.5" class="pilltxt">Start Command</text></g>
+<g data-k="Route by Input Category#3"><rect x="396.84000000000003" y="-8" width="91.19999999999999" height="16" rx="8" class="pill"/><text x="442.44000000000005" y="3.5" class="pilltxt">Supported Text</text></g>
+<g data-k="Route by Input Category#4"><rect x="396.84000000000003" y="16" width="97" height="16" rx="8" class="pill"/><text x="445.34000000000003" y="27.5" class="pilltxt">Supported Photo</text></g>
+<g data-k="Route by Input Category#5"><rect x="396.84000000000003" y="40" width="108.6" height="16" rx="8" class="pill"/><text x="451.14000000000004" y="51.5" class="pilltxt">Unsupported Media</text></g>
+<g data-k="Route by Input Category#6"><rect x="396.84000000000003" y="64" width="73.8" height="16" rx="8" class="pill"/><text x="433.74" y="75.5" class="pilltxt">Empty Input</text></g>
+<g data-k="Is New Message?#0"><rect x="844.6" y="-74.58333333333334" width="33.2" height="16" rx="8" class="pill"/><text x="861.2" y="-63.08333333333334" class="pilltxt">true</text></g>
+<g data-k="Is New Message?#1"><rect x="844.6" y="-53.25000000000001" width="39" height="16" rx="8" class="pill"/><text x="864.1" y="-41.75000000000001" class="pilltxt">false</text></g>
+<g data-k="Route Switch#0"><rect x="2120" y="-292.91666666666663" width="44.8" height="16" rx="8" class="pill"/><text x="2142.4" y="-281.41666666666663" class="pilltxt">policy</text></g>
+<g data-k="Route Switch#1"><rect x="2120" y="-268.91666666666663" width="50.599999999999994" height="16" rx="8" class="pill"/><text x="2145.3" y="-257.41666666666663" class="pilltxt">hr_data</text></g>
+<g data-k="Route Switch#2"><rect x="2120" y="-244.91666666666663" width="27.4" height="16" rx="8" class="pill"/><text x="2133.7" y="-233.41666666666663" class="pilltxt">faq</text></g>
+<g data-k="Route Switch#3"><rect x="2120" y="-220.91666666666663" width="73.8" height="16" rx="8" class="pill"/><text x="2156.9" y="-209.41666666666663" class="pilltxt">work_advice</text></g>
+<g data-k="Route Switch#4"><rect x="2120" y="-196.91666666666663" width="62.199999999999996" height="16" rx="8" class="pill"/><text x="2151.1" y="-185.41666666666663" class="pilltxt">smalltalk</text></g>
+<g data-k="Route Switch#5"><rect x="2120" y="-172.91666666666663" width="50.599999999999994" height="16" rx="8" class="pill"/><text x="2145.3" y="-161.41666666666663" class="pilltxt">unclear</text></g>
+<g data-k="Route Switch#6"><rect x="2120" y="-148.91666666666663" width="85.39999999999999" height="16" rx="8" class="pill"/><text x="2162.7" y="-137.41666666666663" class="pilltxt">router_failed</text></g>
+<g data-k="Call Router#1"><rect x="1923" y="-199.58333333333334" width="39" height="16" rx="8" class="pill err"/><text x="1942.5" y="-188.08333333333334" class="pilltxt err">error</text></g>
+<g data-k="Call Onboarding#1"><rect x="1923" y="-74.58333333333334" width="39" height="16" rx="8" class="pill err"/><text x="1942.5" y="-63.08333333333334" class="pilltxt err">error</text></g>
+<g data-k="Call Policy RAG#1"><rect x="2363.4" y="-534.75" width="39" height="16" rx="8" class="pill err"/><text x="2382.9" y="-523.25" class="pilltxt err">error</text></g>
+<g data-k="Call HR Data Agent#1"><rect x="2363.4" y="-409.74999999999994" width="39" height="16" rx="8" class="pill err"/><text x="2382.9" y="-398.24999999999994" class="pilltxt err">error</text></g>
+<g data-k="Call FAQ#1"><rect x="2363.4" y="-284.74999999999994" width="39" height="16" rx="8" class="pill err"/><text x="2382.9" y="-273.24999999999994" class="pilltxt err">error</text></g>
+<g data-k="Call Work Advice#1"><rect x="2363.4" y="-159.74999999999997" width="39" height="16" rx="8" class="pill err"/><text x="2382.9" y="-148.24999999999997" class="pilltxt err">error</text></g>
+<g data-k="Linked?#0"><rect x="1726" y="-158.41666666666666" width="33.2" height="16" rx="8" class="pill"/><text x="1742.6" y="-146.91666666666666" class="pilltxt">true</text></g>
+<g data-k="Linked?#1"><rect x="1726" y="-137.08333333333334" width="39" height="16" rx="8" class="pill"/><text x="1745.5" y="-125.58333333333334" class="pilltxt">false</text></g>
+</g>
+<rect x="40" y="1011" width="12" height="12" rx="3" fill="#ea580c"/><text x="58" y="1021" class="legend">Trigger</text><rect x="118.66" y="1011" width="12" height="12" rx="3" fill="#d97706"/><text x="136.66" y="1021" class="legend">Code</text><rect x="178.18" y="1011" width="12" height="12" rx="3" fill="#16a34a"/><text x="196.18" y="1021" class="legend">If / Switch</text><rect x="282.36" y="1011" width="12" height="12" rx="3" fill="#229ed9"/><text x="300.36" y="1021" class="legend">Telegram</text><rect x="367.4" y="1011" width="12" height="12" rx="3" fill="#336791"/><text x="385.4" y="1021" class="legend">PostgreSQL</text><rect x="465.2" y="1011" width="12" height="12" rx="3" fill="#94a3b8"/><text x="483.2" y="1021" class="legend">Stop</text><rect x="524.72" y="1011" width="12" height="12" rx="3" fill="#475569"/><text x="542.72" y="1021" class="legend">Sub-workflow</text>
+</svg>

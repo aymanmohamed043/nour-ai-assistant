@@ -1,0 +1,304 @@
+{
+  "name": "Router",
+  "description": "Demo router: live router design (Gemini 3.5 main, 3.1 fallback, organized instructions) with the demo routes.",
+  "active": true,
+  "createdAt": "2026-10-30T15:40:45.410Z",
+  "updatedAt": "2026-10-30T15:41:36.991Z",
+  "isArchived": false,
+  "versionCounter": 2,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "name": "Input",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "name": "Build Router Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Router request for the Nexora demo (same design as live). In: user_text, history[] (+ every field of the main workflow).\n// Out: the same fields + gemini_body + route_decision 'smalltalk' ONLY for a pure greeting / thanks / goodbye (code, no model).\n// «تمام» / «ok» are NOT fixed replies here: they can confirm a leave request the assistant is preparing.\nconst ROUTES = ['policy', 'hr_data', 'faq', 'work_advice', 'unclear'];\nconst input = $('Input').first().json;\nconst text = String(input.user_text ?? '');\nconst FIXED_WORDS = new Set(['السلام', 'عليكم', 'ورحمة', 'الله', 'وبركاته', 'سلام', 'صباح', 'مساء', 'الخير', 'النور', 'الفل', 'الورد',\n  'اهلا', 'أهلا', 'اهلاً', 'أهلاً', 'هلا', 'هاي', 'يا', 'نور', 'hi', 'hello', 'hey', 'good', 'morning', 'evening', 'afternoon',\n  'شكرا', 'شكراً', 'متشكر', 'متشكرة', 'متشكرين', 'تسلم', 'تسلمي', 'ميرسي', 'مرسي', 'جزيلا', 'جزيلاً', 'كتير', 'خالص', 'يخليك', 'جزاك', 'خيرا', 'خيراً',\n  'thanks', 'thank', 'you', 'thx', 'ty', 'so', 'much', 'very', 'a', 'lot', 'مع', 'السلامة', 'باي', 'bye', 'goodbye', 'see', 'later']);\nconst words = text.toLowerCase().replace(/[^\\p{L}\\s]/gu, ' ').split(/\\s+/).filter(Boolean);\nconst isFixed = words.length > 0 && words.length <= 6 && words.every((w) => FIXED_WORDS.has(w));\n\nconst INSTRUCTIONS = `<role>\nYou are the router of Nour, the internal HR assistant of Nexora Digital Solutions (نيكسورا), a company in Egypt.\nEmployees write in Arabic (formal or Egyptian dialect) or English.\nYour only job: choose where the CURRENT message goes. You never answer it.\n</role>\n\n<routes>\npolicy: what the company HR policy SAYS: rules, entitlements and conditions (leaves, working hours, lateness and deductions, salaries, raises, overtime, advances, allowances, promotions, penalties, resignation, training).\n  Examples: «إجازة الجواز كام يوم؟», «لو اتأخرت بيتخصم قد إيه؟», \"Can I work from home?\"\n\nhr_data: the employee's OWN records (their leave balance, their requests and their status, their attendance and lateness, their profile, the latest memos) OR a request to DO something now: submit a leave, permission, mission or HR letter, or cancel a request.\n  Examples: «رصيدي كام؟», «طلباتي فين؟», «اتأخرت كام مرة الشهر ده؟», «قدملي إجازة يوم الخميس», «الغي آخر طلب»\n\nfaq: HOW / WHERE / WHO questions about procedures and tools: how to use the HR system (بوابة نيكسورا), where to find something, how a request or document is processed, IT and access help, who to contact.\n  Examples: «إزاي أقدم طلب من البوابة؟», «نسيت الباسورد أعمل إيه؟», «مين أكلم في الـ HR؟»\n\nwork_advice: anything else: advice on work situations, communication, productivity, career, general or technical questions, casual talk, what the assistant can do.\n  Examples: «زميلي بيقاطعني في الاجتماعات», «إنت تقدر تساعدني في إيه؟»\n\nunclear: no understandable request, even with the recent conversation (random letters, a lone word or symbol).\n  Examples: «asdfgh», «؟»\n</routes>\n\n<rules>\n1. Read the CURRENT message first. If it is understandable on its own, route it by itself, even if earlier messages were about another topic.\n2. A short follow-up that depends on what was said before («وبعدين؟», «وإيه كمان؟», «طب ولو لسه مكملتش سنة؟») continues the topic of the LAST exchange (marked \"last\"): give it the route of that exchange.\n3. A confirmation, refusal or missing detail («أيوه أكد», «تمام», «لا خلاص», a date, «يوم الخميس») for a request the assistant was preparing -> hr_data.\n4. Own data or an action -> hr_data, even if the message also mentions a rule. What the rules allow -> policy. How / where to do it yourself -> faq.\n5. A greeting together with a real question: route by the question.\n</rules>\n\n<output>\nAnswer ONLY with a JSON object: {\"route\": \"<one of: policy, hr_data, faq, work_advice, unclear>\"}.\n</output>`;\n\nconst clean = (s, n) => { let t = String(s ?? '').split('📌')[0]; t = t.replace(/\\(\\s*\\d+(?:\\s*-\\s*\\d+)+[^)]*\\)/g, '').replace(/\\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n) + '…' : t; };\nconst last3 = (Array.isArray(input.history) ? input.history : []).slice(-3);\nconst lines = last3.map((h, i) => `[${i + 1}${i === last3.length - 1 ? ' - last' : ''}] Employee: ${clean(h.text, 300)}\\n    Nour: ${clean(h.response_text, 300) || '(no answer yet)'}`);\nconst conversation = ['Recent conversation (oldest first):', lines.length ? lines.join('\\n') : '(none)', '', 'CURRENT message:', text].join('\\n');\nconst gemini_body = { systemInstruction: { parts: [{ text: INSTRUCTIONS }] }, contents: [{ role: 'user', parts: [{ text: conversation }] }],\n  generationConfig: { temperature: 0, maxOutputTokens: 50, responseMimeType: 'application/json', responseSchema: { type: 'OBJECT', properties: { route: { type: 'STRING', enum: ROUTES } }, required: ['route'] } } };\nreturn [{ json: { ...input, route_decision: isFixed ? 'smalltalk' : '', decided_by: isFixed ? 'code' : null, gemini_body } }];\n"
+      }
+    },
+    {
+      "name": "Fixed Reply?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "fx",
+              "leftValue": "={{ $json.route_decision }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "smalltalk"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      }
+    },
+    {
+      "name": "Route with Gemini",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.gemini_body) }}",
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Read Gemini Route",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        100
+      ],
+      "parameters": {
+        "jsCode": "const ROUTES = ['policy', 'hr_data', 'faq', 'work_advice', 'unclear'];\nconst base = $('Build Router Request').first().json;\nconst msg = (e) => (typeof e === 'string' ? e : (e?.message ?? JSON.stringify(e))).slice(0, 250);\nlet route = 'router_error', error = null;\nif ($json.error) error = 'gemini: ' + msg($json.error);\nelse { const raw = ($json.candidates?.[0]?.content?.parts || []).map((p) => p.text || '').join(''); try { const r = JSON.parse(raw).route; if (ROUTES.includes(r)) route = r; else error = 'gemini: unexpected route ' + String(r).slice(0, 50); } catch (e) { error = 'gemini: not JSON'; } }\nreturn [{ json: { ...base, route_decision: route, decided_by: 'gemini', router_model: $json?.modelVersion ?? 'gemini-3.5-flash-lite', router_error: error } }];\n"
+      }
+    },
+    {
+      "name": "Gemini OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1100,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "gok",
+              "leftValue": "={{ $json.route_decision }}",
+              "operator": {
+                "operation": "notEquals",
+                "type": "string"
+              },
+              "rightValue": "router_error"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      }
+    },
+    {
+      "name": "Route with Gemini 3.1 (fallback)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        250
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Build Router Request').first().json.gemini_body) }}",
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Read Fallback Route",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        250
+      ],
+      "parameters": {
+        "jsCode": "const ROUTES = ['policy', 'hr_data', 'faq', 'work_advice', 'unclear'];\nconst base = $('Read Gemini Route').first().json;\nconst msg = (e) => (typeof e === 'string' ? e : (e?.message ?? JSON.stringify(e))).slice(0, 250);\nlet route = 'router_failed', error = null;\nif ($json.error) error = 'gemini-3.1: ' + msg($json.error);\nelse { const raw = ($json.candidates?.[0]?.content?.parts || []).map((p) => p.text || '').join(''); try { const r = JSON.parse(raw).route; if (ROUTES.includes(r)) route = r; else error = 'gemini-3.1: unexpected route'; } catch (e) { error = 'gemini-3.1: not JSON'; } }\nreturn [{ json: { ...base, route_decision: route, decided_by: 'gemini_3.1_fallback', router_model: $json?.modelVersion ?? 'gemini-3.1-flash-lite', router_error: [base.router_error, error].filter(Boolean).join(' | ') } }];\n"
+      }
+    },
+    {
+      "name": "Route Decided",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Output: every input field + route_decision + router{decided_by, model, error}. The model request is dropped.\nconst { gemini_body, decided_by, router_model, router_error, ...rest } = $json;\nreturn [{ json: { ...rest, router: { decided_by: decided_by ?? 'unknown', model: router_model ?? null, error: router_error ? String(router_error).slice(0, 300) : null } } }];\n"
+      }
+    }
+  ],
+  "connections": {
+    "Input": {
+      "main": [
+        [
+          {
+            "node": "Build Router Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Router Request": {
+      "main": [
+        [
+          {
+            "node": "Fixed Reply?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route with Gemini": {
+      "main": [
+        [
+          {
+            "node": "Read Gemini Route",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read Gemini Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Gemini Route": {
+      "main": [
+        [
+          {
+            "node": "Gemini OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route with Gemini 3.1 (fallback)": {
+      "main": [
+        [
+          {
+            "node": "Read Fallback Route",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read Fallback Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Fallback Route": {
+      "main": [
+        [
+          {
+            "node": "Route Decided",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fixed Reply?": {
+      "main": [
+        [
+          {
+            "node": "Route Decided",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route with Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini OK?": {
+      "main": [
+        [
+          {
+            "node": "Route Decided",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route with Gemini 3.1 (fallback)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  }
+}

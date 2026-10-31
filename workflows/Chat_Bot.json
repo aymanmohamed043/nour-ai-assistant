@@ -1,0 +1,1341 @@
+{
+  "name": "Chat Bot",
+  "description": null,
+  "active": true,
+  "createdAt": "2026-10-26T13:55:53.811Z",
+  "updatedAt": "2026-10-30T15:52:37.479Z",
+  "isArchived": false,
+  "versionCounter": 9,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "edited_message"
+        ],
+        "additionalFields": {}
+      },
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -5376,
+        -736
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 2: Normalize a Telegram update into the unified payload used by the rest of the workflow.\n// Content precedence (do not reorder): photo > sticker > voice/audio > location > animation > document > video > contact > text > empty\nconst MAX_TEXT_LENGTH = 3000;\n\nfunction logEvent(event, details = {}) {\n  console.log(JSON.stringify({ event, ...details, timestamp: new Date().toISOString() }));\n}\n// All Telegram send nodes use parse_mode = HTML, so any user-controlled text placed in a reply\n// must have & < > escaped. (n8n's default is Markdown, where a single _ or * breaks the message.)\nconst escapeHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst toInt = (value) => (value != null ? Number.parseInt(value, 10) : null);\nconst results = [];\n\nfor (const item of $input.all()) {\n  try {\n    const raw = item?.json;\n    if (!raw || typeof raw !== 'object') {\n      logEvent('invalid_payload', { reason: 'Malformed payload' });\n      results.push({ json: { valid: false, error_reason: 'Malformed payload' } });\n      continue;\n    }\n\n    const isEdited = !!raw.edited_message;\n    const message = raw.message || raw.edited_message;\n    if (!message || typeof message !== 'object') {\n      logEvent('invalid_payload', { reason: 'Unknown update type', update_id: raw.update_id ?? null });\n      results.push({ json: { valid: false, error_reason: 'Unknown update type' } });\n      continue;\n    }\n\n    const fromUser = message.from || {};\n    const chat = message.chat || {};\n    const languageCode = typeof fromUser.language_code === 'string' ? fromUser.language_code.toLowerCase() : null;\n\n    const normalized = {\n      event_type: isEdited ? 'edited_message' : 'message',\n      update_id: toInt(raw.update_id),\n      chat_id: toInt(chat.id), // private chats only, so chat_id = user_id\n      chat_type: chat.type ?? null,\n      // escaped for HTML replies (welcome / unsupported)\n      user_name: escapeHtml([fromUser.first_name, fromUser.last_name].filter(Boolean).join(' ') || fromUser.username || 'Anonymous'),\n      // Telegram app language. Used only for replies sent before we read the message text.\n      ui_lang: languageCode && languageCode.startsWith('ar') ? 'ar' : 'en',\n      content_type: 'unknown',\n      media_type: null,\n      text: null,\n      valid: true,\n      error_reason: null,\n    };\n\n    const missingField = ['update_id', 'chat_id'].find((key) => !Number.isInteger(normalized[key]));\n    if (missingField) {\n      normalized.valid = false;\n      normalized.error_reason = `Missing ${missingField}`;\n      logEvent('missing_identity', { reason: normalized.error_reason, update_id: normalized.update_id });\n      results.push({ json: normalized });\n      continue;\n    }\n\n    // This bot is for 1:1 support. In groups chat_id != user_id and many users would share one history.\n    if (chat.type !== 'private') {\n      normalized.valid = false;\n      normalized.error_reason = 'Non-private chat';\n      logEvent('non_private_chat', { update_id: normalized.update_id, chat_type: chat.type ?? null });\n      results.push({ json: normalized });\n      continue;\n    }\n\n    const rawText = typeof message.text === 'string'\n      ? message.text\n      : (typeof message.caption === 'string' ? message.caption : '');\n    const cleanText = rawText.trim();\n\n    // Over-limit text stays invalid but is classified as unsupported so the user still gets a reply.\n    if (cleanText.length > MAX_TEXT_LENGTH) {\n      normalized.valid = false;\n      normalized.content_type = 'unsupported';\n      normalized.media_type = 'text_too_long';\n      normalized.error_reason = `Text exceeds ${MAX_TEXT_LENGTH} characters limit`;\n      logEvent('unsupported_input', { reason: normalized.error_reason, update_id: normalized.update_id });\n      results.push({ json: normalized });\n      continue;\n    }\n\n    if (Array.isArray(message.photo) && message.photo.length) {\n      normalized.content_type = 'photo';\n    } else if (message.sticker) {\n      normalized.content_type = 'unsupported';\n      normalized.media_type = 'sticker';\n    } else if (message.voice || message.audio) {\n      normalized.content_type = 'audio';\n    } else if (message.location) {\n      normalized.content_type = 'unsupported';\n      normalized.media_type = 'location';\n    } else if (message.animation) {\n      normalized.content_type = 'unsupported';\n      normalized.media_type = 'animation';\n    } else if (message.document) {\n      normalized.content_type = 'document';\n    } else if (message.video) {\n      normalized.content_type = 'video';\n    } else if (message.contact) {\n      normalized.content_type = 'unsupported';\n      normalized.media_type = 'contact';\n    } else if (cleanText) {\n      normalized.content_type = 'text';\n      normalized.text = cleanText; // raw text (not escaped): saved to DB and sent to the AI\n    } else {\n      normalized.content_type = 'empty';\n    }\n\n    logEvent('message_normalized', {\n      update_id: normalized.update_id,\n      content_type: normalized.content_type,\n      event_type: normalized.event_type,\n    });\n    results.push({ json: normalized });\n  } catch (error) {\n    logEvent('processing_error', { error: error?.message || String(error) });\n    results.push({ json: { valid: false, error_reason: 'Processing error' } });\n  }\n}\n\nreturn results;"
+      },
+      "name": "Normalize Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4640,
+        -896
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "rightValue": "true",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "leftValue": "={{ String($json.valid === false && $json.error_reason !== \"Text exceeds 3000 characters limit\") }}",
+                    "id": "invalid"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Invalid / Malformed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "rightValue": "edited_message",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "leftValue": "={{ $json.event_type }}",
+                    "id": "edited"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Edited (Ignore)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "rightValue": "text",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "leftValue": "={{ $json.content_type }}",
+                    "id": "start-type"
+                  },
+                  {
+                    "rightValue": "/start",
+                    "operator": {
+                      "operation": "startsWith",
+                      "type": "string"
+                    },
+                    "leftValue": "={{ $json.text || \"\" }}",
+                    "id": "start-text"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Start Command"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "rightValue": "text",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "leftValue": "={{ $json.content_type }}",
+                    "id": "text"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Supported Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "rightValue": "photo",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "leftValue": "={{ $json.content_type }}",
+                    "id": "photo"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Supported Photo"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "rightValue": "unsupported",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "leftValue": "={{ $json.content_type }}",
+                    "id": "media-0"
+                  },
+                  {
+                    "rightValue": "audio",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "leftValue": "={{ $json.content_type }}",
+                    "id": "media-1"
+                  },
+                  {
+                    "rightValue": "video",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "leftValue": "={{ $json.content_type }}",
+                    "id": "media-2"
+                  },
+                  {
+                    "rightValue": "document",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "leftValue": "={{ $json.content_type }}",
+                    "id": "media-3"
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "Unsupported Media"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "rightValue": "empty",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "leftValue": "={{ $json.content_type }}",
+                    "id": "empty"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Empty Input"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Route by Input Category",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -4368,
+        -992
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "Hi! 👋 I'm Nour, the HR assistant at Nexora.\nI can answer policy questions, show your leave balance, requests and attendance, submit leave or permission requests, and help with the Nexora portal.\nWhat do you need?",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "Reply Welcome",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -4064,
+        -1200
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.ui_lang === 'ar'\n  ? `عذراً يا ${$json.user_name}، هذا النوع من الرسائل (${$json.media_type || $json.content_type}) غير مدعوم حالياً. ⚠️\n\nمن فضلك اكتب استفسارك في رسالة نصية واضحة.`\n  : `Sorry ${$json.user_name}, this message type (${$json.media_type || $json.content_type}) is not supported yet. ⚠️\n\nPlease write your question as a text message.` }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "Reply Unsupported Input",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -4064,
+        -736
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.ui_lang === 'ar'\n  ? `يبدو أن رسالتك لا تحتوي على نص واضح. 😊\n\nمن فضلك اكتب سؤالك في رسالة نصية، وسأساعدك.`\n  : `Your message doesn't seem to contain any text. 😊\n\nPlease type your question and I'll help you.` }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "Reply Empty Input",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -4192,
+        -592
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Step 4: Atomic insert = idempotency (DEV tables: support_dev).\n-- If this update_id already exists, ON CONFLICT skips the insert (no error, no duplicate row).\n-- \"inserted\" tells the next node whether this execution is the first one to see this message.\nWITH ins AS (\n  INSERT INTO support_dev.messages (update_id, chat_id, text)\n  VALUES ($1::bigint, $2::bigint, $3::text)\n  ON CONFLICT (update_id) DO NOTHING\n  RETURNING update_id\n)\nSELECT\n  $1::bigint AS update_id,\n  EXISTS (SELECT 1 FROM ins) AS inserted;",
+        "options": {
+          "queryReplacement": "={{ [$json.update_id, $json.chat_id, $json.text] }}"
+        }
+      },
+      "name": "Persist Message",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -4032,
+        -912
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "is-inserted",
+              "leftValue": "={{ $json.inserted }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "name": "Is New Message?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3888,
+        -1040
+      ],
+      "notes": "Step 5: Idempotency check. duplicate → stop."
+    },
+    {
+      "parameters": {},
+      "name": "Duplicate → Stop",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -3648,
+        -976
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Step 6: last 5 question/answer pairs BEFORE the current message (DEV tables: support_dev).\n-- \"update_id < current\" = a message sent after this one (processed in parallel) never leaks into its context,\n--   and the current message is not repeated.\n-- Failed messages are skipped. A 'received' message is included only if it is recent\n--   (it is being answered right now); older ones are stuck and would only confuse the AI.\nSELECT COALESCE(json_agg(h ORDER BY h.update_id), '[]'::json) AS history\nFROM (\n  SELECT update_id, text, response_text, status\n  FROM support_dev.messages\n  WHERE chat_id = $1::bigint\n    AND update_id < $2::bigint\n    AND (status = 'processed' OR (status = 'received' AND created_at > now() - interval '5 minutes'))\n  ORDER BY update_id DESC\n  LIMIT 5\n) h;",
+        "options": {
+          "queryReplacement": "={{ [$('Normalize Message').item.json.chat_id, $('Normalize Message').item.json.update_id] }}"
+        }
+      },
+      "name": "Get Context",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -3632,
+        -1168
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Step 6: last 5 question/answer pairs BEFORE this message. Always returns 1 row."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Builds:\n// 1) prompt         -> HR Agent (today's date + full history)\n// 2) route_decision -> set HERE (no LLM call) for pure greetings/thanks, to save the free daily quota\n\nconst msg = $('Normalize Message').first().json;\nconst history = Array.isArray($json.history) ? $json.history : [];\nconst now = DateTime.now().setZone('Africa/Cairo');\nconst today = `${now.toFormat('yyyy-MM-dd')} (${now.setLocale('en').toFormat('cccc')})`;\n\nconst turns = history.map((h) => {\n  const answer = h.response_text ? h.response_text : '[still being answered separately - do not answer it again]';\n  return `User: ${h.text}\\nAssistant: ${answer}`;\n});\nconst prompt = [\n  `Today is ${today}, Cairo time. Weekend: Friday and Saturday.`,\n  '',\n  'Conversation so far (oldest first):',\n  turns.length ? turns.join('\\n---\\n') : '(this is the first message)',\n  '',\n  'Current message (answer this one):',\n  '<<<',\n  msg.text,\n  '>>>',\n].join('\\n');\n\n// ---- no-LLM fast route: a message made ONLY of greeting/thanks words (max 6 words) ----\n// \"تمام\" / \"ok\" are NOT here on purpose: they can be a confirmation of a pending request.\nconst GREET = new Set(['السلام', 'عليكم', 'ورحمة', 'الله', 'وبركاته', 'سلام', 'صباح', 'مساء', 'الخير', 'النور', 'الفل',\n  'اهلا', 'أهلا', 'اهلاً', 'أهلاً', 'هلا', 'هاي', 'hi', 'hello', 'hey', 'شكرا', 'شكراً', 'متشكر', 'متشكرين', 'تسلم',\n  'تسلمي', 'ميرسي', 'thanks', 'thank', 'you', 'thx', 'يا', 'نور', 'جزيلا', 'جزيلاً', 'كتير', 'خالص']);\nconst words = String(msg.text || '').toLowerCase().replace(/[^\\p{L}\\s]/gu, ' ').split(/\\s+/).filter(Boolean);\nconst fast_route = words.length > 0 && words.length <= 6 && words.every((w) => GREET.has(w)) ? 'smalltalk' : '';\n\nreturn {\n  json: {\n    update_id: msg.update_id,\n    chat_id: msg.chat_id,\n    user_text: msg.text,\n    history_count: history.length,\n    prompt,\n    route_decision: fast_route,\n    router_pass: fast_route ? 0 : null,\n  },\n};\n"
+      },
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3104,
+        -1248
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Turns the history + current message into the prompt for the AI Agent."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// ⑥ Output. Reads ONLY $json: every branch sends the same CONTRACT\n// { update_id, chat_id, route, output, tool_calls[], router{...}, faq{...}|null }.\nconst MAX_LEN = 4000; // Telegram max 4096 per message, keep a margin\n\nconst c = $json;\nconst raw = String(c.output ?? '').trim();\nif (!raw) throw new Error(`Reply is empty (route: ${c.route})`);\n\n// Words the prompts forbid but models sometimes still write: removed here for EVERY route (one place).\nlet reply = raw\n  .replace(/\\s*[،,]?\\s*يا\\s+(فندم|باشا|زميلي|سيدي)/g, '')\n  .replace(/^[،,]\\s*/, '')\n  .replace(/سيادتك/g, 'حضرتك')\n  .trim();\nlet truncated = false;\nif (reply.length > MAX_LEN) {\n  const cut = reply.slice(0, MAX_LEN);\n  const lastBreak = Math.max(cut.lastIndexOf('\\n'), cut.lastIndexOf('. '), cut.lastIndexOf(' '));\n  reply = (lastBreak > MAX_LEN * 0.6 ? cut.slice(0, lastBreak) : cut).trim() + ' …';\n  truncated = true;\n}\n\nconst toolCalls = [...(c.tool_calls || [])];\nif (c.router) toolCalls.push({ tool: 'router', input: null, output: { route: c.route, model: c.router.model, error: c.router.error, decided_by: c.router.decided_by } });\n\nconst escapeHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nreturn {\n  json: {\n    update_id: c.update_id,\n    chat_id: c.chat_id,\n    route: c.route,\n    reply_text: reply,\n    reply_html: escapeHtml(reply),\n    truncated,\n    tool_calls: toolCalls,\n    router_log: { decided_by: c.router?.decided_by ?? 'unknown', model: c.router?.model ?? null, error: c.router?.error ?? null,\n      faq_hit: c.faq ? c.faq.hit : null, faq_top_score: c.faq ? c.faq.top_score : null },\n  },\n};\n"
+      },
+      "name": "Prepare Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -592
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Empty reply → error. Long reply → cut under Telegram's 4096 limit. Escapes HTML."
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.reply_html }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "Send Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1296,
+        -800
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Step 7b: deliver the answer."
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Step 8: the answer was delivered -> mark processed and save it (DEV tables: support_dev).\n-- response_text is what makes the next messages' context a real Q/A history.\n-- tool_calls records which tools the AI used: [] = none.\nUPDATE support_dev.messages\nSET status = 'processed',\n    response_text = $2::text,\n    tool_calls = $3::jsonb,\n    route = $4::varchar\nWHERE update_id = $1::bigint\nRETURNING update_id, status, route, jsonb_array_length(tool_calls) AS tool_call_count;",
+        "options": {
+          "queryReplacement": "={{ [$('Prepare Reply').item.json.update_id, $('Prepare Reply').item.json.reply_text, JSON.stringify($('Prepare Reply').item.json.tool_calls), $('Prepare Reply').item.json.route] }}"
+        }
+      },
+      "name": "Mark Processed",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1488,
+        -800
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Step 8: status = processed + save the answer (it becomes context for the next messages)."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Greetings / thanks / goodbye (decided in code by the router): fixed reply, no model. Outputs the CONTRACT.\nconst ctx = $('Call Router').first().json;\nconst text = String(ctx.user_text || '');\nconst ar = /[\\u0600-\\u06FF]/.test(text) || !/[A-Za-z]/.test(text);\nconst has = (re) => re.test(text);\nlet output;\nif (has(/(شكر|متشكر|تسلم|ميرسي|مرسي|يخليك|جزاك|thank|thx|\\bty\\b)/i)) output = ar ? 'العفو 😊 لو حضرتك احتجت أي حاجة تانية أنا هنا.' : \"You're welcome 😊 I'm here if you need anything else.\";\nelse if (has(/(السلامة|باي|bye|see you|later)/i)) output = ar ? 'مع السلامة 👋 لو حضرتك احتجت أي حاجة أنا موجود.' : \"Goodbye 👋 I'm here whenever you need me.\";\nelse output = ar\n  ? 'أهلاً بحضرتك! 👋 أنا نور، مساعد الموارد البشرية في نيكسورا.\\nأقدر أجاوب على أسئلة اللائحة، وأقولك رصيد إجازاتك وطلباتك وحضورك، وأقدملك طلب إجازة أو إذن، وأرد على أسئلة بوابة نيكسورا.\\nحضرتك محتاج إيه؟'\n  : \"Hi! 👋 I'm Nour, the HR assistant at Nexora.\\nI can answer policy questions, show your leave balance, requests and attendance, submit leave or permission requests, and help with the Nexora portal.\\nWhat do you need?\";\nreturn { json: { update_id: ctx.update_id, chat_id: ctx.chat_id, route: 'smalltalk', output, tool_calls: [], router: ctx.router, faq: null } };\n"
+      },
+      "name": "General Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1072,
+        -1200
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Greetings / thanks: fixed reply, no LLM."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// The router could not tell the topic (even with the history): ask to clarify. Outputs the CONTRACT directly.\nconst ctx = $('Call Router').first().json;\nconst ar = /[\\u0600-\\u06FF]/.test(String(ctx.user_text || '')) ? true : $('Normalize Message').first().json.ui_lang === 'ar';\nconst output = ar\n  ? 'معلش، ممكن حضرتك توضحلي السؤال أكتر؟ 🙏\\nمثلاً: «رصيدي كام؟» أو «إجازة الجواز كام يوم؟» أو «إزاي أطلع شهادة خبرة؟»'\n  : 'Sorry, could you tell me a bit more about what you need? 🙏\\nFor example: \"what is my leave balance?\" or \"how many days is marriage leave?\"';\nreturn { json: { update_id: ctx.update_id, chat_id: ctx.chat_id, route: 'unclear', output, tool_calls: [], router: ctx.router, faq: null } };\n"
+      },
+      "name": "Unclear Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        -784
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Topic not clear (also the classifier's 'other' fallback): ask to clarify, no LLM."
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "r-policy",
+                    "leftValue": "={{ $json.route_decision }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "policy"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "policy"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "r-hr_data",
+                    "leftValue": "={{ $json.route_decision }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "hr_data"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "hr_data"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "r-faq",
+                    "leftValue": "={{ $json.route_decision }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "faq"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "faq"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "r-work_advice",
+                    "leftValue": "={{ $json.route_decision }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "work_advice"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "work_advice"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "r-smalltalk",
+                    "leftValue": "={{ $json.route_decision }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "smalltalk"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "smalltalk"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "r-unclear",
+                    "leftValue": "={{ $json.route_decision }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "unclear"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "unclear"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "r-router_failed",
+                    "leftValue": "={{ $json.route_decision }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "router_failed"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "router_failed"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Route Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1856,
+        -1792
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Any failure: fixed apology instead of silence. Outputs the CONTRACT with the error logged.\nconst b = $('Build Prompt').first().json;\nlet ctx = null;\ntry { ctx = $('Call Router').first().json; } catch (e) { ctx = null; }\nconst t = String(b.user_text || '');\nconst ar = /[\\u0600-\\u06FF]/.test(t) || !/[A-Za-z]/.test(t);\nlet err = $json?.error?.message ?? $json?.error ?? null;\nif (!err && $json?.route_decision === 'router_failed') err = $json.router?.error ?? 'router_failed';\nif (!err) err = 'unknown_error';\nerr = typeof err === 'string' ? err : JSON.stringify(err).slice(0, 300);\nconst router = ctx?.router ?? { decided_by: 'none', model: null, error: err };\nreturn [{ json: { update_id: b.update_id, chat_id: b.chat_id, route: 'router_error',\n  output: ar ? 'معلش، عندي مشكلة مؤقتة دلوقتي 🙏 ممكن حضرتك تبعت رسالتك تاني بعد شوية؟' : \"Sorry, I'm having a temporary problem right now 🙏 Could you send your message again in a little while?\",\n  tool_calls: [{ tool: 'error', input: { failed_after_route: ctx?.route_decision ?? null }, output: { error: err } }],\n  router: { ...router, error: router.error ?? err }, faq: null } }];\n"
+      },
+      "name": "Error Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        -640
+      ],
+      "notes": "Router failed (429 / down / bad JSON): fixed apology instead of silence."
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Is this Telegram chat linked to an active employee?\n-- DEMO: a new chat gets its OWN demo employee (a copy of NXR-1001 with the same balances and attendance),\n-- so every visitor can try every feature right away, and one visitor's requests never show up for another.\nWITH linked AS (\n  SELECT employee_code, full_name_ar, gender FROM hr.employees\n  WHERE telegram_chat_id = $1::bigint AND employment_status = 'active'\n), new_emp AS (\n  INSERT INTO hr.employees (employee_code, full_name_ar, full_name_en, gender, birth_date, hire_date, job_title_ar,\n                            department_code, manager_code, employment_status, work_email, telegram_chat_id)\n  SELECT 'DEMO-' || $1::text, full_name_ar, full_name_en, gender, birth_date, hire_date, job_title_ar,\n         department_code, manager_code, 'active', 'demo+' || $1::text || '@nexora.example', $1::bigint\n  FROM hr.employees WHERE employee_code = 'NXR-1001' AND NOT EXISTS (SELECT 1 FROM linked)\n  RETURNING employee_code, full_name_ar, gender\n), new_bal AS (\n  INSERT INTO hr.leave_balances (employee_code, balance_year, leave_type, entitled_days, carried_days)\n  SELECT n.employee_code, b.balance_year, b.leave_type, b.entitled_days, b.carried_days\n  FROM new_emp n, hr.leave_balances b WHERE b.employee_code = 'NXR-1001'\n  RETURNING 1\n), new_att AS (\n  INSERT INTO hr.attendance (employee_code, work_date, day_status, check_in, check_out, late_minutes)\n  SELECT n.employee_code, a.work_date, a.day_status, a.check_in, a.check_out, a.late_minutes\n  FROM new_emp n, hr.attendance a WHERE a.employee_code = 'NXR-1001'\n  RETURNING 1\n)\nSELECT COALESCE(\n  (SELECT json_build_object('linked', true, 'employee_code', employee_code, 'name', full_name_ar, 'gender', gender) FROM linked),\n  (SELECT json_build_object('linked', true, 'demo', true, 'employee_code', employee_code, 'name', full_name_ar, 'gender', gender) FROM new_emp),\n  json_build_object('linked', false)) AS me,\n  (SELECT count(*) FROM new_bal) + (SELECT count(*) FROM new_att) AS demo_rows_seeded;",
+        "options": {
+          "queryReplacement": "={{ [ $('Build Prompt').first().json.chat_id ] }}"
+        }
+      },
+      "name": "Check Link",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -2912,
+        -1248
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "notes": "Every message: linked employee -> normal flow; not linked -> onboarding (code + birth date)."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "linked",
+              "leftValue": "={{ $json.employee.linked }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "name": "Linked?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2480,
+        -800
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Linked employee: continue with the Build Prompt data, and tell the HR Agent who is talking\n// (name + gender -> correct Arabic forms).\nconst b = $('Build Prompt').first().json;\nconst me = $json.me || {};\nconst who = `The employee: ${me.name ?? 'unknown'} (${me.gender ?? 'unknown'}).`;\n// history goes to the sub-workflows (they cannot read nodes of this workflow)\nlet history = [];\ntry { history = $('Get Context').first().json.history || []; } catch (e) {}\nreturn [{ json: { ...b, employee: me, history, prompt: b.prompt.replace('\\n\\nConversation so far', `\\n${who}\\n\\nConversation so far`) } }];\n"
+      },
+      "name": "Restore Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2672,
+        -800
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- One row per answered message: the router dataset (DEV tables: support_dev).\nINSERT INTO support_dev.router_decisions\n  (update_id, execution_id, chat_id, request_text, history_count, route, decided_by, router_model, router_error, faq_hit, faq_top_score)\nVALUES ($1::bigint, $2::text, $3::bigint, $4::text, $5::int, $6::text, $7::text, NULLIF($8::text, ''), NULLIF($9::text, ''), NULLIF($10::text, '')::boolean, NULLIF($11::text, '')::numeric)\nON CONFLICT (update_id) DO NOTHING;",
+        "options": {
+          "queryReplacement": "={{ [ $('Prepare Reply').item.json.update_id, $execution.id, $('Prepare Reply').item.json.chat_id, $('Build Prompt').first().json.user_text, $('Build Prompt').first().json.history_count, $('Prepare Reply').item.json.route ?? 'unknown', $('Prepare Reply').item.json.router_log?.decided_by ?? 'unknown', $('Prepare Reply').item.json.router_log?.model ?? '', $('Prepare Reply').item.json.router_log?.error ?? '', $('Prepare Reply').item.json.router_log?.faq_hit == null ? '' : String($('Prepare Reply').item.json.router_log.faq_hit), $('Prepare Reply').item.json.router_log?.faq_top_score == null ? '' : String($('Prepare Reply').item.json.router_log.faq_top_score) ] }}"
+        }
+      },
+      "name": "Log Router Decision",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1696,
+        -800
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "Router dataset: support_dev.router_decisions. Failure here never affects the reply."
+    },
+    {
+      "parameters": {
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        },
+        "workflowId": {
+          "__rl": true,
+          "cachedResultName": "Router",
+          "mode": "id",
+          "value": "a3wtmLpfSUA6dfOM"
+        }
+      },
+      "name": "Call Router",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -2144,
+        -1504
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Runs the sub-workflow \"Router\" (open it to see / test this part alone)."
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "cachedResultName": "Onboarding",
+          "mode": "id",
+          "value": "bXvZOjN4kGCdykYu"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "name": "Call Onboarding",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -1712,
+        -320
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Runs the sub-workflow \"Onboarding\" (open it to see / test this part alone)."
+    },
+    {
+      "parameters": {
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        },
+        "workflowId": {
+          "__rl": true,
+          "cachedResultName": "Policy RAG",
+          "mode": "id",
+          "value": "JPr3mpfvO53t99he"
+        }
+      },
+      "name": "Call Policy RAG",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -1072,
+        -1792
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Runs the sub-workflow \"Policy RAG\" (open it to see / test this part alone)."
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "cachedResultName": "HR Data Agent",
+          "mode": "id",
+          "value": "7bSnqghE4dQjYbWb"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "name": "Call HR Data Agent",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -1072,
+        -1648
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Runs the sub-workflow \"HR Data Agent\" (open it to see / test this part alone)."
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "cachedResultName": "FAQ",
+          "mode": "id",
+          "value": "Nb5fc1X4fsi0yfGW"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "name": "Call FAQ",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -1072,
+        -1488
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Runs the sub-workflow \"FAQ\" (open it to see / test this part alone)."
+    },
+    {
+      "parameters": {
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        },
+        "workflowId": {
+          "__rl": true,
+          "cachedResultName": "General",
+          "mode": "id",
+          "value": "0pEiZYeu03tmiXNx"
+        }
+      },
+      "name": "Call Work Advice",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -1072,
+        -1344
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Runs the sub-workflow \"General\" (open it to see / test this part alone)."
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Input Category": {
+      "main": [
+        null,
+        [],
+        [
+          {
+            "node": "Reply Welcome",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Persist Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Unsupported Input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Unsupported Input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Empty Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Message": {
+      "main": [
+        [
+          {
+            "node": "Route by Input Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Persist Message": {
+      "main": [
+        [
+          {
+            "node": "Is New Message?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Is New Message?": {
+      "main": [
+        [
+          {
+            "node": "Get Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Duplicate → Stop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Context": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Prepare Reply": {
+      "main": [
+        [
+          {
+            "node": "Send Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Send Reply": {
+      "main": [
+        [
+          {
+            "node": "Mark Processed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "General Reply": {
+      "main": [
+        [
+          {
+            "node": "Prepare Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Unclear Reply": {
+      "main": [
+        [
+          {
+            "node": "Prepare Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Check Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Processed": {
+      "main": [
+        [
+          {
+            "node": "Log Router Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Reply": {
+      "main": [
+        [
+          {
+            "node": "Prepare Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Switch": {
+      "main": [
+        [
+          {
+            "node": "Call Policy RAG",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call HR Data Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call FAQ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call Work Advice",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "General Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unclear Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Router": {
+      "main": [
+        [
+          {
+            "node": "Route Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Onboarding": {
+      "main": [
+        [
+          {
+            "node": "Prepare Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Policy RAG": {
+      "main": [
+        [
+          {
+            "node": "Prepare Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call HR Data Agent": {
+      "main": [
+        [
+          {
+            "node": "Prepare Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call FAQ": {
+      "main": [
+        [
+          {
+            "node": "Prepare Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Work Advice": {
+      "main": [
+        [
+          {
+            "node": "Prepare Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Link": {
+      "main": [
+        [
+          {
+            "node": "Restore Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Prompt": {
+      "main": [
+        [
+          {
+            "node": "Linked?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Linked?": {
+      "main": [
+        [
+          {
+            "node": "Call Router",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call Onboarding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "5dab6a5e-afa4-4bfb-86fa-1ae93e56db56",
+      "name": "① Input & Dedup",
+      "nodeIds": [
+        "18d3768e-9808-4b2f-985a-b7fedf474562",
+        "674d743d-6895-4251-8ea3-e72282f219fd",
+        "2e4ea6d3-0035-4547-81b6-9c39bf2890a3",
+        "29111481-7385-4fe4-a376-96f0b7c1efb5",
+        "2e6717a5-49bb-4097-ac5e-2beda59385d1",
+        "09dffadc-3d5d-475d-889a-ed288fa03da7",
+        "1cddd5b2-339b-4f82-9eb7-da3293834854",
+        "270f9438-a292-4d44-9382-b1cbd3c5ae89",
+        "1d7321a0-7b9a-4af5-afaa-fe6827986dc4"
+      ],
+      "description": "Telegram update in: normalize, handle /start and unsupported input, save, skip duplicates, load history. Out: message + history."
+    },
+    {
+      "id": "0e11172a-74f7-4fc6-994b-066f08513636",
+      "name": "② Identity",
+      "nodeIds": [
+        "59985be9-0cc0-49be-95d7-74904a1adf3a",
+        "23999e7b-cd2b-4081-a604-fc6275d3fac1"
+      ],
+      "description": "Builds the prompt and router requests, then checks if this Telegram chat is linked to an employee. Out: me.linked."
+    },
+    {
+      "id": "1696dc32-948e-4305-a752-19263c50c636",
+      "name": "⑥ Output & Logging",
+      "nodeIds": [
+        "54195828-19ed-4dc3-b7df-b5afdacc4fbe",
+        "ed1ddb9e-425a-4953-8b23-f4f4e73e489d",
+        "5be19840-b46c-4f00-843e-f15fac8f4441"
+      ],
+      "description": "Sends the reply on Telegram, marks the message done, logs the router decision to router_decisions."
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "timezone": "Africa/Cairo",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 120
+  }
+}
