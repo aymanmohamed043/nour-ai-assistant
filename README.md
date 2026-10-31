@@ -145,14 +145,28 @@ The full reasoning and numbers are in [`docs/decisions.md`](docs/decisions.md).
 
 ## Evaluation
 
+### Final system
+
 | Test | Result |
 |---|---|
-| Router, 42 cases (follow-ups, topic changes, English, prompt injection) | ✅ 40/42 correct, 2 lost to network errors |
-| Policy answers, 30 questions — gemini-3.5-flash-lite | ✅ 28 correct, 2 partial, 0 wrong facts |
-| Policy answers, 30 questions — Qwen3.7 Flash (paid) | ❌ 2 wrong facts, 7 partial answers → rejected |
-| Policy answers, 30 questions — local Qwen3.6-35B-A3B (vLLM) | ❌ 3 wrong facts, 7.6 s median → rejected for policy |
-| 8 free Gemini / Gemma models, 8 hard questions | ✅ gemini-3.1-flash-lite 8/8 → chosen as main |
-| Re-test of the failed cases after the prompt fixes | ✅ 9/9 correct |
+| Router — 42 cases (follow-ups, topic changes, English, prompt injection) | ✅ 40/42 correct (2 lost to network errors, 0 wrong decisions) |
+| Policy answers — 30 questions (gemini-3.5-flash-lite) | ✅ 28 correct, 2 partial, **0 wrong facts** |
+| Re-test of the hard cases after the prompt fixes (boundaries, English, follow-ups, third person) | ✅ 9/9 correct |
+| Policy answer model — 8 hard questions (gemini-3.1-flash-lite, final main model) | ✅ 8/8 correct |
+| End-to-end demo test (policy, follow-up, balance, leave request + confirm, FAQ, advice, new visitor) | ✅ all routes correct, all features working |
+| Response time (Telegram message → reply) | ✅ 0.4 s fixed replies · 1–5 s typical · ~11 s worst case when a fallback model answers |
+
+### Model selection (same chunks, same prompt, free tier, Oct 2026)
+
+| Model | Policy answers | Router | Decision |
+|---|---|---|---|
+| gemini-3.1-flash-lite | 8/8 (hard set) | — | **Policy answers (main) + router fallback** |
+| gemini-3.5-flash-lite | 28/30 correct, 0 wrong facts | 23/23 of the cases it decided (42-case set) | **Router (main) + policy fallback** |
+| Qwen3.7 Flash (paid, OpenRouter) | 21/30 correct, 7 partial, 2 wrong facts | 32/33, 1.3 s | Not used: wrong facts, invented details |
+| Qwen3.6-35B-A3B (local, vLLM) | 23/30 correct, 3 wrong / no answer, 7.6 s median | 31/33, 0.5 s | Fast enough for routing; not accurate enough for policy |
+| gemini-2.5-flash | 6/8 correct, 2 partial (hard set), 8.4 s median | — | Not used: slow, 20 requests/day |
+| Gemini 3 / 3.6 / 3.7 Flash | correct when they answered | — | Not used: 20 requests/day, often busy |
+| Gemma 4 26B / 31B | mostly unavailable or errors | — | Not used: unreliable on the free tier |
 
 Questions, results and the decision each test led to: [`docs/evaluation.md`](docs/evaluation.md).
 
