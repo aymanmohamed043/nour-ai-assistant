@@ -22,23 +22,14 @@
 
 > **نور** — مساعد ذكي بالعربي والإنجليزي: بيجاوب من مستندات الشركة بالمصادر، بيقرا بيانات المستخدم، وبينفّذ طلبات بعد تأكيد.
 
-Nour is an AI assistant you can plug into any organization. It works from **three sources** and decides on every message which one to use:
+Nour is an AI assistant you can plug into any organization. On every message it decides what is needed, then:
 
-| Source | What Nour does with it | In the HR demo |
+| | What Nour does | In the HR demo |
 |---|---|---|
-| 📚 **Documents** (RAG, Qdrant) | Searches the official text, answers with the exact rule and its conditions, and adds the clauses it used (`📌 Sources: clause 2-4-5`). Sources are added by code, never invented by the model. | HR policy: working hours, lateness, leave types, overtime, allowances, resignation |
-| 🗂️ **Database** (PostgreSQL) | Reads **only the current user's** own records through 5 read tools. | Profile and manager, leave balance per type, requests and their status, attendance and lateness minutes, company memos |
-| ✅ **Actions** (database functions) | Prepares a request, repeats the details, and writes it **only after the user confirms**. 5 write tools, each one a checked database function. | Submit leave, permission, work mission or HR request (certificate, letter, advance); cancel a pending request |
-
-Around them:
-
-- 🧭 **Router** — one model call picks the right part for every message (policy, own data, FAQ, work advice, unclear); greetings and thanks are answered in code without a model.
-- ❓ **FAQ** — a second knowledge base for "how do I…" questions (portal, passwords, procedures).
-- 💡 **Work advice** — practical, warm answers for everyday work situations.
-- 💬 **Conversation** — remembers the last exchanges, so short follow-ups («طب ولو لسه مكملتش 6 شهور؟», «أيوه أكد») are understood.
-- 🌍 **Arabic and English** — Egyptian Arabic or English, the reply language is decided in code from the user's message.
-- 🔐 **Accounts** — links a Telegram user to an employee record; every data tool works only on that employee.
-- 🛟 **Never silent** — every model call has an error path, main models have a fallback, and every routing decision is logged.
+| 📚 **Reads documents** (RAG) | Answers from the official text with the exact rule, its conditions and the clauses used — sources are added by code, never invented | HR policy: hours, lateness, leave, overtime, allowances |
+| 🗂️ **Reads the database** | Shows **only the user's own** records | Balance, requests and status, attendance and late minutes, manager, memos |
+| ✅ **Takes actions** | Prepares a request, repeats the details, writes it **only after the user confirms** | Leave, permission, mission, HR request (certificate, advance), cancel a request |
+| 💬 **Holds a conversation** | Understands short follow-ups, answers FAQ and work-advice questions, in Egyptian Arabic or English | «طب ولو لسه مكملتش 6 شهور؟», «أيوه أكد», "How many leave days…?" |
 
 Nour started as an internal HR assistant built for a company. This repo shows the full system on a fictional company,
 **Nexora Digital Solutions (نيكسورا)**, with a made-up HR policy and mock employee data — the same design fits customer support,
