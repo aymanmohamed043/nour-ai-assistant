@@ -20,26 +20,22 @@
   <a href="#work-with-me">Contact</a>
 </p>
 
-> **نور** — مساعد ذكي بالعربي والإنجليزي: بيجاوب من مستندات الشركة بالمصادر، بيقرا بيانات المستخدم، وبينفّذ طلبات بعد تأكيد.
+> **نور** — مساعد ذكي بالعربي والإنجليزي: بيجاوب من مستندات الشركة بالمصادر، بيقرا بيانات الموظف، بينفّذ طلبات بعد تأكيد، بيرد على الأسئلة الشائعة وبيدّي نصايح في الشغل.
 
 Nour is an AI assistant you can plug into any organization. On every message it decides what is needed, then:
 
 | | What Nour does | In the HR demo |
 |---|---|---|
-| 📚 **Reads documents** (RAG) | Answers from the official text with the exact rule, its conditions and the clauses used — sources are added by code, never invented | HR policy: hours, lateness, leave, overtime, allowances |
-| 🗂️ **Reads the database** | Shows **only the user's own** records | Balance, requests and status, attendance and late minutes, manager, memos |
-| ✅ **Takes actions** | Prepares a request, repeats the details, writes it **only after the user confirms** | Leave, permission, mission, HR request (certificate, advance), cancel a request |
-| 💬 **Holds a conversation** | Understands short follow-ups, answers FAQ and work-advice questions, in Egyptian Arabic or English | «طب ولو لسه مكملتش 6 شهور؟», «أيوه أكد», "How many leave days…?" |
-
-Nour started as an internal HR assistant built for a company. This repo shows the full system on a fictional company,
-**Nexora Digital Solutions (نيكسورا)**, with a made-up HR policy and mock employee data — the same design fits customer support,
-internal help desks, sales and onboarding.
-
-> **Live demo available on request** — [email me](#work-with-me) and I'll run it for you.
+| 📚 **Answers from documents** (RAG) | Answers from the official text with the exact rule, its conditions and the clauses used — sources are added by code, never invented | HR policy: working hours, lateness, leave, overtime, allowances, resignation |
+| 🗂️ **Reads the database** | Shows **only the user's own** records | Leave balance, requests and their status, attendance and late minutes, manager, memos |
+| ✅ **Takes actions** | Prepares a request, repeats the details, and writes it **only after the user confirms** | Submit leave, permission, mission or HR request (certificate, advance); cancel a request |
+| ❓ **Answers FAQs** | Answers "how do I…" questions from a separate FAQ bank | Forgotten password, using the HR portal, procedures |
+| 💡 **Gives work advice** | Practical, friendly advice for everyday situations at work — without inventing company rules | A colleague who interrupts, communication, career questions |
+| 💬 **Holds a conversation** | Remembers the recent chat, so short follow-ups and confirmations are understood; replies in Egyptian Arabic or English | «طب ولو لسه مكملتش 6 شهور؟», «أيوه أكد», "How many leave days do I get?" |
 
 ## Demo: HR assistant for Nexora
 
-Real Telegram chats with the demo bot:
+Real Telegram chats with the demo bot. Nexora is a fictional company: the HR policy and employee data are made up.
 
 <table>
 <tr>
@@ -53,19 +49,6 @@ Real Telegram chats with the demo bot:
 <td align="center" valign="top"><img src="docs/screenshots/06-faq-and-advice.png" width="260" alt="FAQ and work advice"><br><sub><b>FAQ + work advice</b><br>forgotten password, a colleague who interrupts</sub></td>
 </tr>
 </table>
-
-### More examples
-
-| Employee says | Nour does |
-|---|---|
-| «إجازة الجواز كام يوم؟» | Searches the policy and answers with the exact rule and its conditions, then lists the clauses used (`📌 المصادر: البند 2-4-5`) |
-| «طب ولو لسه مكملتش 6 شهور؟» | Understands the follow-up refers to marriage leave and answers for that case |
-| «رصيد إجازاتي كام؟» | Reads the employee's own balance: 21 annual, 7 casual, nothing pending |
-| «عايز أقدم إجازة سنوية يوم الأحد الجاي» → «أيوه أكد» | Prepares the request, **asks for confirmation**, then submits it and names the approving manager |
-| «نسيت الباسورد أعمل إيه؟» | FAQ answer (procedures and tools) |
-| «زميلي بيقاطعني في الاجتماعات» | Practical work advice in warm Egyptian Arabic |
-| «شكراً» / «أهلاً» | Fixed reply in code — no model call |
-| English questions | Answers fully in English (language decided in code) |
 
 ## Architecture
 
