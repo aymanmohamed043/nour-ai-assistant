@@ -17,7 +17,7 @@ The second message alone does not mention marriage leave, so a vector search on 
 | A. LLM query rewrite | A model rewrites the follow-up into a standalone question, then search | One extra model call before every search |
 | B. Second search built in code | Search the original message **and** a second text: previous question + start of the previous answer + current message | One extra vector search, no model call |
 
-**What we measured (free tier).**
+**What we measured (free tier, development experiments; the raw runs are not part of this repo).**
 
 - A: the rewrite call was **late 5 times out of 6**, so it ate most of the time budget of the answer.
 - B: the second search found the right clauses **5 out of 5** times.

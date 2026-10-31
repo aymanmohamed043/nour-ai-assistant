@@ -190,4 +190,4 @@ Built by **Ayman Mohamed Abdallah** — AI Engineer.
 I build assistants like this one for businesses: answers from your own documents with sources,
 AI agents that read and update your systems safely, and the n8n automations around them — tested before they go live.
 
-📧 **[ayman.mohamed141163@el-eng.menofia.edu.eg](mailto:ayman.mohamed141163@el-eng.menofia.edu.eg)** — for a live walkthrough of Nour or to talk about your project.
+📧 **[ayman.mohamed141163@gmail.com](mailto:ayman.mohamed141163@gmail.com)** — for a live walkthrough of Nour or to talk about your project.
