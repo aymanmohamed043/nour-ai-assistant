@@ -22,14 +22,23 @@
 
 > **نور** — مساعد ذكي بالعربي والإنجليزي: بيجاوب من مستندات الشركة بالمصادر، بيقرا بيانات المستخدم، وبينفّذ طلبات بعد تأكيد.
 
-Nour is an AI assistant you can plug into any organization:
+Nour is an AI assistant you can plug into any organization. It works from **three sources** and decides on every message which one to use:
 
-| | |
-|---|---|
-| 📚 **Knowledge (RAG)** | Answers from your documents with the exact source of every fact, and understands follow-up questions. |
-| 🗂️ **Data** | Reads the user's own records from your database (balances, requests, history). |
-| ✅ **Actions** | Prepares requests, asks for confirmation, then writes them to your system. |
-| 💬 **Conversation** | Remembers the recent chat, replies in the user's language, never stays silent (every model call has an error path). |
+| Source | What Nour does with it | In the HR demo |
+|---|---|---|
+| 📚 **Documents** (RAG, Qdrant) | Searches the official text, answers with the exact rule and its conditions, and adds the clauses it used (`📌 Sources: clause 2-4-5`). Sources are added by code, never invented by the model. | HR policy: working hours, lateness, leave types, overtime, allowances, resignation |
+| 🗂️ **Database** (PostgreSQL) | Reads **only the current user's** own records through 5 read tools. | Profile and manager, leave balance per type, requests and their status, attendance and lateness minutes, company memos |
+| ✅ **Actions** (database functions) | Prepares a request, repeats the details, and writes it **only after the user confirms**. 5 write tools, each one a checked database function. | Submit leave, permission, work mission or HR request (certificate, letter, advance); cancel a pending request |
+
+Around them:
+
+- 🧭 **Router** — one model call picks the right part for every message (policy, own data, FAQ, work advice, unclear); greetings and thanks are answered in code without a model.
+- ❓ **FAQ** — a second knowledge base for "how do I…" questions (portal, passwords, procedures).
+- 💡 **Work advice** — practical, warm answers for everyday work situations.
+- 💬 **Conversation** — remembers the last exchanges, so short follow-ups («طب ولو لسه مكملتش 6 شهور؟», «أيوه أكد») are understood.
+- 🌍 **Arabic and English** — Egyptian Arabic or English, the reply language is decided in code from the user's message.
+- 🔐 **Accounts** — links a Telegram user to an employee record; every data tool works only on that employee.
+- 🛟 **Never silent** — every model call has an error path, main models have a fallback, and every routing decision is logged.
 
 Nour started as an internal HR assistant built for a company. This repo shows the full system on a fictional company,
 **Nexora Digital Solutions (نيكسورا)**, with a made-up HR policy and mock employee data — the same design fits customer support,
@@ -39,18 +48,7 @@ internal help desks, sales and onboarding.
 
 ## Demo: HR assistant for Nexora
 
-| Employee says | Nour does |
-|---|---|
-| «إجازة الجواز كام يوم؟» | Searches the policy and answers with the exact rule and its conditions, then lists the clauses used (`📌 المصادر: البند 2-4-5`) |
-| «طب ولو لسه مكملتش 6 شهور؟» | Understands the follow-up refers to marriage leave and answers for that case |
-| «رصيد إجازاتي كام؟» | Reads the employee's own balance: 21 annual, 7 casual, nothing pending |
-| «عايز أقدم إجازة سنوية يوم الأحد الجاي» → «أيوه أكد» | Prepares the request, **asks for confirmation**, then submits it and names the approving manager |
-| «نسيت الباسورد أعمل إيه؟» | FAQ answer (procedures and tools) |
-| «زميلي بيقاطعني في الاجتماعات» | Practical work advice in warm Egyptian Arabic |
-| «شكراً» / «أهلاً» | Fixed reply in code — no model call |
-| English questions | Answers fully in English (language decided in code) |
-
-### Screenshots (real Telegram chats with the demo bot)
+Real Telegram chats with the demo bot:
 
 <table>
 <tr>
@@ -64,6 +62,19 @@ internal help desks, sales and onboarding.
 <td align="center" valign="top"><img src="docs/screenshots/06-faq-and-advice.png" width="260" alt="FAQ and work advice"><br><sub><b>FAQ + work advice</b><br>forgotten password, a colleague who interrupts</sub></td>
 </tr>
 </table>
+
+### More examples
+
+| Employee says | Nour does |
+|---|---|
+| «إجازة الجواز كام يوم؟» | Searches the policy and answers with the exact rule and its conditions, then lists the clauses used (`📌 المصادر: البند 2-4-5`) |
+| «طب ولو لسه مكملتش 6 شهور؟» | Understands the follow-up refers to marriage leave and answers for that case |
+| «رصيد إجازاتي كام؟» | Reads the employee's own balance: 21 annual, 7 casual, nothing pending |
+| «عايز أقدم إجازة سنوية يوم الأحد الجاي» → «أيوه أكد» | Prepares the request, **asks for confirmation**, then submits it and names the approving manager |
+| «نسيت الباسورد أعمل إيه؟» | FAQ answer (procedures and tools) |
+| «زميلي بيقاطعني في الاجتماعات» | Practical work advice in warm Egyptian Arabic |
+| «شكراً» / «أهلاً» | Fixed reply in code — no model call |
+| English questions | Answers fully in English (language decided in code) |
 
 ## Architecture
 
