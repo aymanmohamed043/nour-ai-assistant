@@ -50,6 +50,21 @@ internal help desks, sales and onboarding.
 | «شكراً» / «أهلاً» | Fixed reply in code — no model call |
 | English questions | Answers fully in English (language decided in code) |
 
+### Screenshots (real Telegram chats with the demo bot)
+
+<table>
+<tr>
+<td align="center" valign="top" width="33%"><img src="docs/screenshots/01-policy-answer-with-sources.png" width="260" alt="Policy answer with sources"><br><sub><b>Policy answer with sources</b><br>working hours, lateness, overtime, annual leave</sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/screenshots/02-employee-own-data.png" width="260" alt="Employee's own data"><br><sub><b>Follow-up + own data</b><br>marriage leave, leave balance, lateness this month</sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/screenshots/03-leave-request-with-confirmation.png" width="260" alt="Leave request with confirmation"><br><sub><b>Leave request with confirmation</b><br>prepared → confirmed → submitted, then "my requests"</sub></td>
+</tr>
+<tr>
+<td align="center" valign="top"><img src="docs/screenshots/04-exact-rules.png" width="260" alt="Exact rules"><br><sub><b>Exact rules</b><br>transport allowance, arriving at 9:15 exactly, thanks answered in code</sub></td>
+<td align="center" valign="top"><img src="docs/screenshots/05-english.png" width="260" alt="English"><br><sub><b>English</b><br>welcome message and a full English answer with sources</sub></td>
+<td align="center" valign="top"><img src="docs/screenshots/06-faq-and-advice.png" width="260" alt="FAQ and work advice"><br><sub><b>FAQ + work advice</b><br>forgotten password, a colleague who interrupts</sub></td>
+</tr>
+</table>
+
 ## Architecture
 
 ```mermaid
@@ -184,6 +199,7 @@ scripts/           export_workflows.sh — export workflows from n8n and remove 
                    render_workflows.mjs — draw docs/workflows/*.svg from the exports
 docs/decisions.md  engineering decisions with the numbers behind them
 docs/workflows/    workflow diagrams (generated)
+docs/screenshots/  Telegram screenshots of the demo bot
 docs/evaluation.md every test: questions, results, decisions
 ```
 </details>
